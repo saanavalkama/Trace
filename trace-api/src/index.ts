@@ -1,12 +1,7 @@
-import express from "express";
+import "dotenv/config";
+import app from "./app";
 import {env} from "./config/env";
-import { healthRouter } from "./routes/health";
 
-const app = express();
-
-app.use(express.json());
-
-app.use(healthRouter);
 
 app.listen(env.port, ()=>{
     console.log(`trace-api listening on ${env.port}`);

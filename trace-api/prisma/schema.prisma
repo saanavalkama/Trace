@@ -27,8 +27,18 @@ enum SprintStatus{
 model User{
   id String @id @default(uuid())
   email String @unique
-  passwordHash String
-  displayName String
   createdAt DateTime @default(now())
 
+  @@map("users")
+}
+
+model LoginCode{
+  id String @id @default(uuid())
+  email String @unique
+  codeHash String
+  expiresAt DateTime
+  attemps Int @default(0)
+  createdAt DateTime @default(now())
+
+  @@map("login_codes")
 }
