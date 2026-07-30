@@ -28,6 +28,7 @@ model User{
   id String @id @default(uuid())
   email String @unique
   createdAt DateTime @default(now())
+  memberships WorkspaceMember[]
 
   @@map("users")
 }
@@ -41,4 +42,26 @@ model LoginCode{
   createdAt DateTime @default(now())
 
   @@map("login_codes")
+}
+
+model Workspace{
+  id String @id @default(uuid())
+  name String
+  createdAt DateTime @default(now()) @map("created_at")
+  members WorkspaceMember[]
+
+  @@map("workspaces")
+}
+
+model WorkspaceMember{
+  id String @id @default(uuid())
+  workspaceId String @map("workspace_id")
+  userId String @map("user_id")
+  role WorkspaceRole
+  createdAt DateTime @default(now()) @map("created_at")
+  workspace Workspace @relation(fields:[workspaceId],references: [id], onDelete: Cascade)
+  user User @relation(fields:[userId], references:[id],onDelete:Cascade)
+
+  @@unique([workspaceId, userId])
+  @@map("workspace_members")
 }

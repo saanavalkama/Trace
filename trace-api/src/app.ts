@@ -2,6 +2,7 @@
 import express, { NextFunction, Request, Response } from 'express'
 import cors from 'cors'
 import authRouter from './routes/auth.routes'
+import workspaceRouter from './routes/workspace.routes'
 import { healthRouter } from './routes/health'
 import { env } from './config/env'
 
@@ -15,6 +16,7 @@ if(env.frontendUrl){
 
 app.use(healthRouter)
 app.use('/auth', authRouter)
+app.use('/workspace',workspaceRouter)
 
 // Centralized error handler: never leak internals (stack traces, DB errors)
 // to the client. Express 5 forwards rejected async handlers here automatically.
