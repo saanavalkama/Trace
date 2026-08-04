@@ -1,5 +1,5 @@
 import { Request, Response } from "express"
-import { createWorkspaceSchema, updateWorkspaceSchema } from "../validationSchemas/workpace.schema"
+import { createWorkspaceSchema, sendInviteSchema, updateWorkspaceSchema } from "../validationSchemas/workpace.schema"
 import { workspaceService } from "../services/workspace.service"
 import { ConflictError, NotFoundError } from "../errors/errors"
 
@@ -81,5 +81,23 @@ export const workspaceController = {
             }
             throw err
         }
+    },
+
+    sendInvite: async(req:Request, res:Response) => {
+        const result = sendInviteSchema.safeParse(req.body)
+        if(!result.success){
+            return res.status(400).json({errors: result.error.flatten().fieldErrors})
+        }
+        const {id} = req.params as {id:string}
+        const serviceResult= await workspaceService.sendInvite(id, result.data)
+
+        if(serviceResult.error === 'ALREADY_INVITED'){
+            return res.status(409).json({message:'This email already has pending invite to this workspace'})
+        }
+        if(serviceResult.error === 'ALREADY_MEMBER'){
+            return res.status(409).json({message:'This user is already a member'})
+        }
+
+        res.status(201).json(serviceResult.data)
     }
 }

@@ -80,10 +80,28 @@ export const workspaceRepository = {
     },
 
     getMembership:async(workspaceId: string, userId: string)=> {
-        return prisma.workspaceMember.findUnique({
+        return await prisma.workspaceMember.findUnique({
             where: { workspaceId_userId: { workspaceId, userId } },
         })
     },
+
+    addMember: async(workspaceId:string, userId:string, role: WorkspaceRole)=>{
+        return await prisma.workspaceMember.create({
+            data:{
+                workspaceId,
+                userId,
+                role
+            }
+        })
+    },
+
+    findMemberByEmail: async(workspaceId:string, email:string) => {
+        return await prisma.workspaceMember.findFirst({
+            where:{
+                workspaceId, user:{email}
+            }
+        })
+    }
 
     
 }

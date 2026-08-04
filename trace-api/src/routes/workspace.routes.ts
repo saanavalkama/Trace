@@ -39,5 +39,16 @@ router.delete(
     workspaceController.removeMember
 )
 
+router.post(
+    '/:id/invites',
+    requireRole(WorkspaceRole.admin, WorkspaceRole.owner),
+    workspaceController.sendInvite
+)
+
+router.get(
+    '/:id/invites',
+    requireRole(WorkspaceRole.admin, WorkspaceRole.owner)
+    //controller
+)
 
 export default router

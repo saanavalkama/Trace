@@ -6,6 +6,8 @@ import { emailSender } from '../lib/emailSender'
 import { InvalidCodeError } from '../errors/errors'
 import { userRepository } from '../repositories/user.repository'
 import { env } from '../config/env'
+import { inviteRepository } from '../repositories/invite.repository'
+import { inviteService } from './invite.service'
 
 const CODE_TTL_MS = 5 * 60 * 1000
 const RESEND_COOLDOWN_MS = 60 * 1000
@@ -22,7 +24,17 @@ function generateCode():string{
 
 export const authService = {
 
-    requestCode: async (email:string) => {
+    requestCode: async (email:string, inviteToken?:string) => {
+
+        let effectiveInviteToken = inviteToken
+
+        if(!effectiveInviteToken){
+            const pendingInvites = await inviteRepository.getAllPendingInvites(email)
+            if(pendingInvites.length === 1){
+                effectiveInviteToken = pendingInvites[0].token
+            }
+        }
+
         const existing = await loginCodeRepository.findByEmail(email)
 
         // Silently no-op within the cooldown window so a burst of requests
@@ -35,7 +47,7 @@ export const authService = {
         const codeHash = await bcrypt.hash(code, BCRYPT_COST)
         const expiresAt = new Date(Date.now() + CODE_TTL_MS)
 
-        await loginCodeRepository.upsertForEmail(email, {codeHash, expiresAt, attemps:0})
+        await loginCodeRepository.upsertForEmail(email, {codeHash, expiresAt, attemps:0, inviteToken:effectiveInviteToken})
         await emailSender.sendOtpEmail(email,code)
     },
 
@@ -58,6 +70,10 @@ export const authService = {
         await loginCodeRepository.deleteByEmail(email)
 
         const user = await userRepository.findOrCreateByEmail(email)
+
+        if(record.inviteToken){
+            await inviteService.acceptInvite(record.inviteToken, user.id)
+        }
 
         const token = jwt.sign({ sub: user.id, email: user.email }, env.jwtSecret, {
             expiresIn: env.jwtExpiresIn,

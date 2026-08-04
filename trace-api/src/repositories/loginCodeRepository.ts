@@ -4,6 +4,7 @@ interface UpsertLoginCodeData {
     codeHash: string
     expiresAt: Date
     attemps:number
+    inviteToken?:string
 }
 
 export const loginCodeRepository = {
@@ -13,13 +14,15 @@ export const loginCodeRepository = {
             update: {
                 codeHash: data.codeHash,
                 expiresAt: data.expiresAt,
-                attemps: data.attemps
+                attemps: data.attemps,
+                inviteToken: data.inviteToken ?? null
             },
             create:{
                 email,
                 codeHash: data.codeHash,
                 expiresAt: data.expiresAt,
-                attemps: data.attemps
+                attemps: data.attemps,
+                inviteToken: data.inviteToken ?? null
             }
         })
     },

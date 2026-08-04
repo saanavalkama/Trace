@@ -24,6 +24,13 @@ enum SprintStatus{
   completed
 }
 
+enum InviteStatus{
+  pending
+  accepted
+  expired
+  declined
+}
+
 model User{
   id String @id @default(uuid())
   email String @unique
@@ -39,6 +46,7 @@ model LoginCode{
   codeHash String
   expiresAt DateTime
   attemps Int @default(0)
+  inviteToken String? @map("invite_token")
   createdAt DateTime @default(now())
 
   @@map("login_codes")
@@ -49,6 +57,7 @@ model Workspace{
   name String
   createdAt DateTime @default(now()) @map("created_at")
   members WorkspaceMember[]
+  ivites WorkspaceInvite[]
 
   @@map("workspaces")
 }
@@ -64,4 +73,20 @@ model WorkspaceMember{
 
   @@unique([workspaceId, userId])
   @@map("workspace_members")
+}
+
+model WorkspaceInvite{
+  id String @id @default(uuid())
+  workspaceId String @map("workplace_id")
+  email String
+  role WorkspaceRole
+  token String @unique
+  status InviteStatus @default(pending)
+  expiresAt DateTime @map("expires_at")
+  createdAt DateTime @default(now()) @map("created_at")
+  accepedAt DateTime? @map("accepted_at")
+  workspace Workspace @relation(fields:[workspaceId], references:[id], onDelete:Cascade)
+  @@index([email])
+  @@map("workplace_invites")
+
 }

@@ -40,6 +40,7 @@ export type LoginCodeMinAggregateOutputType = {
   codeHash: string | null
   expiresAt: Date | null
   attemps: number | null
+  inviteToken: string | null
   createdAt: Date | null
 }
 
@@ -49,6 +50,7 @@ export type LoginCodeMaxAggregateOutputType = {
   codeHash: string | null
   expiresAt: Date | null
   attemps: number | null
+  inviteToken: string | null
   createdAt: Date | null
 }
 
@@ -58,6 +60,7 @@ export type LoginCodeCountAggregateOutputType = {
   codeHash: number
   expiresAt: number
   attemps: number
+  inviteToken: number
   createdAt: number
   _all: number
 }
@@ -77,6 +80,7 @@ export type LoginCodeMinAggregateInputType = {
   codeHash?: true
   expiresAt?: true
   attemps?: true
+  inviteToken?: true
   createdAt?: true
 }
 
@@ -86,6 +90,7 @@ export type LoginCodeMaxAggregateInputType = {
   codeHash?: true
   expiresAt?: true
   attemps?: true
+  inviteToken?: true
   createdAt?: true
 }
 
@@ -95,6 +100,7 @@ export type LoginCodeCountAggregateInputType = {
   codeHash?: true
   expiresAt?: true
   attemps?: true
+  inviteToken?: true
   createdAt?: true
   _all?: true
 }
@@ -191,6 +197,7 @@ export type LoginCodeGroupByOutputType = {
   codeHash: string
   expiresAt: Date
   attemps: number
+  inviteToken: string | null
   createdAt: Date
   _count: LoginCodeCountAggregateOutputType | null
   _avg: LoginCodeAvgAggregateOutputType | null
@@ -223,6 +230,7 @@ export type LoginCodeWhereInput = {
   codeHash?: Prisma.StringFilter<"LoginCode"> | string
   expiresAt?: Prisma.DateTimeFilter<"LoginCode"> | Date | string
   attemps?: Prisma.IntFilter<"LoginCode"> | number
+  inviteToken?: Prisma.StringNullableFilter<"LoginCode"> | string | null
   createdAt?: Prisma.DateTimeFilter<"LoginCode"> | Date | string
 }
 
@@ -232,6 +240,7 @@ export type LoginCodeOrderByWithRelationInput = {
   codeHash?: Prisma.SortOrder
   expiresAt?: Prisma.SortOrder
   attemps?: Prisma.SortOrder
+  inviteToken?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
 }
 
@@ -244,6 +253,7 @@ export type LoginCodeWhereUniqueInput = Prisma.AtLeast<{
   codeHash?: Prisma.StringFilter<"LoginCode"> | string
   expiresAt?: Prisma.DateTimeFilter<"LoginCode"> | Date | string
   attemps?: Prisma.IntFilter<"LoginCode"> | number
+  inviteToken?: Prisma.StringNullableFilter<"LoginCode"> | string | null
   createdAt?: Prisma.DateTimeFilter<"LoginCode"> | Date | string
 }, "id" | "email">
 
@@ -253,6 +263,7 @@ export type LoginCodeOrderByWithAggregationInput = {
   codeHash?: Prisma.SortOrder
   expiresAt?: Prisma.SortOrder
   attemps?: Prisma.SortOrder
+  inviteToken?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   _count?: Prisma.LoginCodeCountOrderByAggregateInput
   _avg?: Prisma.LoginCodeAvgOrderByAggregateInput
@@ -270,6 +281,7 @@ export type LoginCodeScalarWhereWithAggregatesInput = {
   codeHash?: Prisma.StringWithAggregatesFilter<"LoginCode"> | string
   expiresAt?: Prisma.DateTimeWithAggregatesFilter<"LoginCode"> | Date | string
   attemps?: Prisma.IntWithAggregatesFilter<"LoginCode"> | number
+  inviteToken?: Prisma.StringNullableWithAggregatesFilter<"LoginCode"> | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"LoginCode"> | Date | string
 }
 
@@ -279,6 +291,7 @@ export type LoginCodeCreateInput = {
   codeHash: string
   expiresAt: Date | string
   attemps?: number
+  inviteToken?: string | null
   createdAt?: Date | string
 }
 
@@ -288,6 +301,7 @@ export type LoginCodeUncheckedCreateInput = {
   codeHash: string
   expiresAt: Date | string
   attemps?: number
+  inviteToken?: string | null
   createdAt?: Date | string
 }
 
@@ -297,6 +311,7 @@ export type LoginCodeUpdateInput = {
   codeHash?: Prisma.StringFieldUpdateOperationsInput | string
   expiresAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   attemps?: Prisma.IntFieldUpdateOperationsInput | number
+  inviteToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -306,6 +321,7 @@ export type LoginCodeUncheckedUpdateInput = {
   codeHash?: Prisma.StringFieldUpdateOperationsInput | string
   expiresAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   attemps?: Prisma.IntFieldUpdateOperationsInput | number
+  inviteToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -315,6 +331,7 @@ export type LoginCodeCreateManyInput = {
   codeHash: string
   expiresAt: Date | string
   attemps?: number
+  inviteToken?: string | null
   createdAt?: Date | string
 }
 
@@ -324,6 +341,7 @@ export type LoginCodeUpdateManyMutationInput = {
   codeHash?: Prisma.StringFieldUpdateOperationsInput | string
   expiresAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   attemps?: Prisma.IntFieldUpdateOperationsInput | number
+  inviteToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -333,6 +351,7 @@ export type LoginCodeUncheckedUpdateManyInput = {
   codeHash?: Prisma.StringFieldUpdateOperationsInput | string
   expiresAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   attemps?: Prisma.IntFieldUpdateOperationsInput | number
+  inviteToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -342,6 +361,7 @@ export type LoginCodeCountOrderByAggregateInput = {
   codeHash?: Prisma.SortOrder
   expiresAt?: Prisma.SortOrder
   attemps?: Prisma.SortOrder
+  inviteToken?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
 }
 
@@ -355,6 +375,7 @@ export type LoginCodeMaxOrderByAggregateInput = {
   codeHash?: Prisma.SortOrder
   expiresAt?: Prisma.SortOrder
   attemps?: Prisma.SortOrder
+  inviteToken?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
 }
 
@@ -364,6 +385,7 @@ export type LoginCodeMinOrderByAggregateInput = {
   codeHash?: Prisma.SortOrder
   expiresAt?: Prisma.SortOrder
   attemps?: Prisma.SortOrder
+  inviteToken?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
 }
 
@@ -379,6 +401,10 @@ export type IntFieldUpdateOperationsInput = {
   divide?: number
 }
 
+export type NullableStringFieldUpdateOperationsInput = {
+  set?: string | null
+}
+
 
 
 export type LoginCodeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -387,6 +413,7 @@ export type LoginCodeSelect<ExtArgs extends runtime.Types.Extensions.InternalArg
   codeHash?: boolean
   expiresAt?: boolean
   attemps?: boolean
+  inviteToken?: boolean
   createdAt?: boolean
 }, ExtArgs["result"]["loginCode"]>
 
@@ -396,6 +423,7 @@ export type LoginCodeSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Ext
   codeHash?: boolean
   expiresAt?: boolean
   attemps?: boolean
+  inviteToken?: boolean
   createdAt?: boolean
 }, ExtArgs["result"]["loginCode"]>
 
@@ -405,6 +433,7 @@ export type LoginCodeSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Ext
   codeHash?: boolean
   expiresAt?: boolean
   attemps?: boolean
+  inviteToken?: boolean
   createdAt?: boolean
 }, ExtArgs["result"]["loginCode"]>
 
@@ -414,10 +443,11 @@ export type LoginCodeSelectScalar = {
   codeHash?: boolean
   expiresAt?: boolean
   attemps?: boolean
+  inviteToken?: boolean
   createdAt?: boolean
 }
 
-export type LoginCodeOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "email" | "codeHash" | "expiresAt" | "attemps" | "createdAt", ExtArgs["result"]["loginCode"]>
+export type LoginCodeOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "email" | "codeHash" | "expiresAt" | "attemps" | "inviteToken" | "createdAt", ExtArgs["result"]["loginCode"]>
 
 export type $LoginCodePayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "LoginCode"
@@ -428,6 +458,7 @@ export type $LoginCodePayload<ExtArgs extends runtime.Types.Extensions.InternalA
     codeHash: string
     expiresAt: Date
     attemps: number
+    inviteToken: string | null
     createdAt: Date
   }, ExtArgs["result"]["loginCode"]>
   composites: {}
@@ -857,6 +888,7 @@ export interface LoginCodeFieldRefs {
   readonly codeHash: Prisma.FieldRef<"LoginCode", 'String'>
   readonly expiresAt: Prisma.FieldRef<"LoginCode", 'DateTime'>
   readonly attemps: Prisma.FieldRef<"LoginCode", 'Int'>
+  readonly inviteToken: Prisma.FieldRef<"LoginCode", 'String'>
   readonly createdAt: Prisma.FieldRef<"LoginCode", 'DateTime'>
 }
     
