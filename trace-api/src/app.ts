@@ -1,6 +1,7 @@
 // app.ts
 import express, { NextFunction, Request, Response } from 'express'
 import cors from 'cors'
+import cookieParser from 'cookie-parser'
 import authRouter from './routes/auth.routes'
 import workspaceRouter from './routes/workspace.routes'
 import inviteRouter from './routes/invite.routes'
@@ -10,6 +11,7 @@ import { env } from './config/env'
 const app = express()
 
 app.use(express.json({ limit: '10kb' }))
+app.use(cookieParser())
 
 if(env.frontendUrl){
     app.use(cors({ origin: env.frontendUrl, credentials: true }))

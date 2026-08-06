@@ -18,3 +18,10 @@ export class ConflictError extends Error {
         this.name = "ConflictError"
     }
 }
+
+export class ReusedTokenError extends Error {
+  constructor() {
+    super('Refresh token reuse detected')
+    this.name = 'ReusedTokenError'
+  }
+}

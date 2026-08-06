@@ -1,8 +1,11 @@
 import { Request, Response } from "express"
 import { requestCodeSchema, verifyCodeSchema } from "../validationSchemas/auth.schema"
 import {authService} from '../services/auth.service'
-import { InvalidCodeError } from "../errors/errors"
+import { InvalidCodeError, ReusedTokenError } from "../errors/errors"
 import { env } from "../config/env"
+import { refreshTokenService } from "../services/token.service"
+import { userRepository } from "../repositories/user.repository"
+import { refreshTokenRepository } from "../repositories/refreshToken.repository"
 
 const SESSION_COOKIE_MAX_AGE_MS = 7 * 24 * 60 * 60 * 1000
 
@@ -29,20 +32,68 @@ export const authController = {
         const {code} = result.data
 
         try{
-            const {user, token} = await authService.verifyCode(email, code)
+            const {user, accessToken, refreshToken} = await authService.verifyCode(email, code)
 
-            res.cookie('session', token, {
+            res.cookie('refreshToken', refreshToken, {
                 httpOnly: true,
                 secure: env.nodeEnv === 'production',
                 sameSite: 'lax',
                 maxAge: SESSION_COOKIE_MAX_AGE_MS,
             })
-            res.status(200).json({user: {id: user.id, email: user.email}})
+            res.status(200).json({user: {id: user.id, email: user.email}, accessToken})
         } catch(err) {
             if(err instanceof InvalidCodeError){
                 return res.status(400).json({message: err.message})
             }
             throw err
         }
+    }, 
+
+    refresh:async(req:Request, res:Response) => {
+        const refreshToken = req.cookies?.refreshToken
+
+        if(!refreshToken){
+            return res.status(401).json({message: 'Missing refresh token'})
+        }
+
+        try{
+            const {rawToken:newRefreshToken, userId } = await refreshTokenService.rotate(refreshToken)
+
+            const user = await userRepository.findById(userId)
+
+            if(!user){
+                return res.status(404).json({message: 'User not found'})
+            }
+
+            const accessToken = refreshTokenService.assignAccessToken(user.id, user.email)
+
+            res.cookie('refreshToken', newRefreshToken, {
+                httpOnly: true,
+                secure: env.nodeEnv === 'production',
+                sameSite: 'lax',
+                maxAge: SESSION_COOKIE_MAX_AGE_MS,
+            })
+
+            res.status(200).json({accessToken})
+        } catch(err){
+            if(err instanceof ReusedTokenError){
+                res.clearCookie('refreshToken')
+                return res.status(401).json({message: 'Session invalid - please log in again'})
+            }
+            throw err
+        }
+    },
+
+    logout: async(req:Request, res:Response) => {
+        const refreshToken = req.cookies?.refreshToken 
+
+        const existingToken = await refreshTokenRepository.findByRawToken(refreshToken)
+
+        if(existingToken){
+            await refreshTokenRepository.revokeFamily(existingToken.familyId)
+        }
+
+        res.clearCookie('session')
+        res.status(204).send()
     }
 }

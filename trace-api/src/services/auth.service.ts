@@ -8,6 +8,7 @@ import { userRepository } from '../repositories/user.repository'
 import { env } from '../config/env'
 import { inviteRepository } from '../repositories/invite.repository'
 import { inviteService } from './invite.service'
+import { refreshTokenService } from './token.service'
 
 const CODE_TTL_MS = 5 * 60 * 1000
 const RESEND_COOLDOWN_MS = 60 * 1000
@@ -75,10 +76,10 @@ export const authService = {
             await inviteService.acceptInvite(record.inviteToken, user.id)
         }
 
-        const token = jwt.sign({ sub: user.id, email: user.email }, env.jwtSecret, {
-            expiresIn: env.jwtExpiresIn,
-        } as jwt.SignOptions)
+        const accessToken = refreshTokenService.assignAccessToken(user.id, user.email)
 
-        return { user, token }
+        const {rawToken:refreshToken} = await refreshTokenService.issueNewFamily(user.id)
+
+        return { user, accessToken, refreshToken}
     }
 }

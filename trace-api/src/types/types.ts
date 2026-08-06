@@ -25,3 +25,10 @@ export interface InviteContextDto{
     email:string, 
     role: WorkspaceRole
 }
+
+export interface CreateTokenData{
+    userId:string, 
+    familyId:string, 
+    rawToken: string, 
+    expiresAt:Date
+}

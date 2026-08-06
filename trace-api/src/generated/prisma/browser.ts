@@ -42,3 +42,8 @@ export type WorkspaceMember = Prisma.WorkspaceMemberModel
  * 
  */
 export type WorkspaceInvite = Prisma.WorkspaceInviteModel
+/**
+ * Model RefreshToken
+ * 
+ */
+export type RefreshToken = Prisma.RefreshTokenModel

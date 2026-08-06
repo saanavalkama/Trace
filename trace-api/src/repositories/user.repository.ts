@@ -7,4 +7,10 @@ export const userRepository = {
 
     return prisma.user.create({ data: { email } })
   },
+
+  findById: async(id:string) => {
+    return prisma.user.findUnique({
+        where:{id}
+    })
+  }
 }
