@@ -2,6 +2,7 @@ import { Router } from "express";
 import rateLimit from "express-rate-limit";
 import { authController } from "../controllers/auth.controller";
 import { requireAuth } from "../middleware/authorization.middleware";
+import { env } from "../config/env";
 
 const router = Router()
 
@@ -10,6 +11,7 @@ const requestCodeLimiter = rateLimit({
     limit: 5,
     standardHeaders: true,
     legacyHeaders: false,
+    skip: () => env.nodeEnv === "test",
     message: {message: "Too many requests, please try again later"},
 })
 
@@ -18,6 +20,7 @@ const verifyCodeLimiter = rateLimit({
     limit: 20,
     standardHeaders: true,
     legacyHeaders: false,
+    skip: () => env.nodeEnv === "test",
     message: {message: "Too many requests, please try again later"},
 })
 

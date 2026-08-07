@@ -1,4 +1,6 @@
-import "dotenv/config"
+import dotenv from "dotenv"
+
+dotenv.config({ path: process.env.NODE_ENV === "test" ? ".env.test" : ".env" })
 
 function required(name:string):string{
     const value = process.env[name]
