@@ -18,7 +18,7 @@ export const authController = {
         }
         const email = result.data.email.toLocaleLowerCase().trim()
 
-        await authService.requestCode(email)
+        await authService.requestCode(email, result.data.inviteToken)
 
         res.status(200).json({message:"If this email is valid, a code has been sent"})
     },
@@ -93,7 +93,7 @@ export const authController = {
             await refreshTokenRepository.revokeFamily(existingToken.familyId)
         }
 
-        res.clearCookie('session')
+        res.clearCookie('refreshToken')
         res.status(204).send()
     }
 }

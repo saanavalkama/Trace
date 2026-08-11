@@ -1,7 +1,8 @@
 import {email, z} from 'zod'
 
 export const requestCodeSchema = z.object({
-    email: z.string().email()
+    email: z.string().email(),
+    inviteToken: z.string().optional()
 })
 
 export const verifyCodeSchema = z.object({

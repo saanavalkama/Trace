@@ -47,8 +47,8 @@ router.post(
 
 router.get(
     '/:id/invites',
-    requireRole(WorkspaceRole.admin, WorkspaceRole.owner)
-    //controller
+    requireRole(WorkspaceRole.admin, WorkspaceRole.owner),
+    workspaceController.getInvites
 )
 
 export default router

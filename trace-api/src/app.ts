@@ -19,7 +19,7 @@ if(env.frontendUrl){
 
 app.use(healthRouter)
 app.use('/auth', authRouter)
-app.use('/workspace',workspaceRouter)
+app.use('/workspaces',workspaceRouter)
 app.use('/invites',inviteRouter)
 
 // Centralized error handler: never leak internals (stack traces, DB errors)

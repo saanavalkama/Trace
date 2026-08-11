@@ -65,6 +65,8 @@ export const workspaceService = {
             return {error: 'ALREADY_INVITED' as const}
         }
 
+        await inviteRepository.expireStalePendingInvite(workspaceId, cleanedEmail)
+
         const inputData = {
             email:cleanedEmail,
             role:data.role,
@@ -94,5 +96,15 @@ export const workspaceService = {
         }
 
         return {error:null, data: dto}
+    },
+
+    getInvites: async(workspaceId:string) => {
+        const invites = await inviteRepository.getInvitesByWorkspaceId(workspaceId)
+        return invites.map((invite):SendInviteDto => ({
+            id: invite.id,
+            email: invite.email,
+            role: invite.role,
+            status: invite.status
+        }))
     }
 }

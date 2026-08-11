@@ -99,5 +99,11 @@ export const workspaceController = {
         }
 
         res.status(201).json(serviceResult.data)
+    },
+
+    getInvites: async(req:Request, res:Response) => {
+        const {id} = req.params as {id:string}
+        const invites = await workspaceService.getInvites(id)
+        res.status(200).json(invites)
     }
 }

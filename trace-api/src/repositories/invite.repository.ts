@@ -59,7 +59,22 @@ export const inviteRepository = {
 
     findPendingByWorkspaceAndEmail: async(workspaceId:string, email:string) => {
         return await prisma.workspaceInvite.findFirst({
-            where:{workspaceId, email, status: InviteStatus.pending}
+            where:{workspaceId, email, status: InviteStatus.pending, expiresAt: {gt: new Date()}}
+        })
+    },
+
+    // Frees the partial unique index on (workspaceId, email, pending) so a
+    // new invite can be created after the old pending one has lapsed.
+    expireStalePendingInvite: async(workspaceId:string, email:string) => {
+        return await prisma.workspaceInvite.updateMany({
+            where:{workspaceId, email, status: InviteStatus.pending, expiresAt: {lte: new Date()}},
+            data:{status: InviteStatus.expired}
+        })
+    },
+
+    getInvitesByWorkspaceId: async(workspaceId:string) => {
+        return await prisma.workspaceInvite.findMany({
+            where:{workspaceId}
         })
     }
 
