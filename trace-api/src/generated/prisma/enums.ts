@@ -25,3 +25,13 @@ export const SprintStatus = {
 } as const
 
 export type SprintStatus = (typeof SprintStatus)[keyof typeof SprintStatus]
+
+
+export const InviteStatus = {
+  pending: 'pending',
+  accepted: 'accepted',
+  expired: 'expired',
+  declined: 'declined'
+} as const
+
+export type InviteStatus = (typeof InviteStatus)[keyof typeof InviteStatus]
