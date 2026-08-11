@@ -102,3 +102,18 @@ model RefreshToken{
   createdAt DateTime @default(now()) @map("created_at")
   user User @relation(fields:[userId], references:[id], onDelete: Cascade)
 }
+
+model Event{
+  id String @id @default(uuid())
+  aggregateId String @map("aggregate_id")
+  aggregateType String @default("Issue") @map("aggregate_type")
+  version Int
+  type String
+  payload Json
+  schemaVersion Int @map("schema_version")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@unique([aggregateId, version])
+  @@index([aggregateId])
+  @@map("events")
+}

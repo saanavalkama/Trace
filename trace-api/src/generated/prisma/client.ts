@@ -71,3 +71,8 @@ export type WorkspaceInvite = Prisma.WorkspaceInviteModel
  * 
  */
 export type RefreshToken = Prisma.RefreshTokenModel
+/**
+ * Model Event
+ * 
+ */
+export type Event = Prisma.EventModel

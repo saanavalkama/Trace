@@ -25,3 +25,12 @@ export class ReusedTokenError extends Error {
     this.name = 'ReusedTokenError'
   }
 }
+
+export class ConcurrencyError extends Error {
+  constructor(aggregateId: string, expectedVersion: number) {
+    super(
+      `Concurrency conflict on aggregate ${aggregateId}: expected version ${expectedVersion} was already taken`
+    );
+    this.name = 'ConcurrencyError';
+  }
+}
