@@ -59,6 +59,7 @@ model Workspace{
   createdAt DateTime @default(now()) @map("created_at")
   members WorkspaceMember[]
   ivites WorkspaceInvite[]
+  sprints Sprint[]
 
   @@map("workspaces")
 }
@@ -101,4 +102,33 @@ model RefreshToken{
   revokedAt DateTime? @map("revoked_at")
   createdAt DateTime @default(now()) @map("created_at")
   user User @relation(fields:[userId], references:[id], onDelete: Cascade)
+}
+
+model Sprint{
+  id String @id @default(uuid())
+  workspaceId String @map("workspace_id")
+  name String
+  status SprintStatus @default(planned)
+  startDate DateTime @map("start_date")
+  endDate DateTime @map("end_date")
+  createdAt DateTime @default(now()) @map("created_at")
+  workspace Workspace @relation(fields:[workspaceId], references:[id], onDelete: Cascade)
+
+  @@index([workspaceId])
+  @@map("sprints")
+}
+
+model Event{
+  id String @id @default(uuid())
+  aggregateId String @map("aggregate_id")
+  aggregateType String @default("Issue") @map("aggregate_type")
+  version Int
+  type String
+  payload Json
+  schemaVersion Int @map("schema_version")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@unique([aggregateId, version])
+  @@index([aggregateId])
+  @@map("events")
 }

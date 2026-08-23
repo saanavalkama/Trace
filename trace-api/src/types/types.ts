@@ -1,4 +1,4 @@
-import { InviteStatus, WorkspaceRole } from "../generated/prisma/enums"
+import { InviteStatus, SprintStatus, WorkspaceRole } from "../generated/prisma/enums"
 
 export interface UpdateWorkspaceData{
     name:string
@@ -27,8 +27,21 @@ export interface InviteContextDto{
 }
 
 export interface CreateTokenData{
-    userId:string, 
-    familyId:string, 
-    rawToken: string, 
+    userId:string,
+    familyId:string,
+    rawToken: string,
     expiresAt:Date
+}
+
+export interface CreateSprintData{
+    name:string,
+    startDate:Date,
+    endDate:Date
+}
+
+export interface UpdateSprintData{
+    name?:string,
+    status?:SprintStatus,
+    startDate?:Date,
+    endDate?:Date
 }
