@@ -1,6 +1,7 @@
 import { CURRENT_SCHEMA_VERSION, IssueEvent } from "../features/issues/issue-events";
 import { ConcurrencyError } from "../errors/errors";
 import { Prisma, PrismaClient } from "../generated/prisma/client";
+import { prisma } from "../db/prisma";
 
 export class EventStore{
     constructor(private prisma : PrismaClient){}
@@ -38,3 +39,5 @@ export class EventStore{
         })
     }
 }
+
+export const eventStore = new EventStore(prisma)

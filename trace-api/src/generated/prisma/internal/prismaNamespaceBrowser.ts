@@ -57,6 +57,7 @@ export const ModelName = {
   WorkspaceMember: 'WorkspaceMember',
   WorkspaceInvite: 'WorkspaceInvite',
   RefreshToken: 'RefreshToken',
+  Sprint: 'Sprint',
   Event: 'Event'
 } as const
 
@@ -144,6 +145,19 @@ export const RefreshTokenScalarFieldEnum = {
 } as const
 
 export type RefreshTokenScalarFieldEnum = (typeof RefreshTokenScalarFieldEnum)[keyof typeof RefreshTokenScalarFieldEnum]
+
+
+export const SprintScalarFieldEnum = {
+  id: 'id',
+  workspaceId: 'workspaceId',
+  name: 'name',
+  status: 'status',
+  startDate: 'startDate',
+  endDate: 'endDate',
+  createdAt: 'createdAt'
+} as const
+
+export type SprintScalarFieldEnum = (typeof SprintScalarFieldEnum)[keyof typeof SprintScalarFieldEnum]
 
 
 export const EventScalarFieldEnum = {
