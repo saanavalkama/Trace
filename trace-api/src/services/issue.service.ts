@@ -7,13 +7,26 @@ import {
     issueCommands,
     IssueState
 } from '../features/issues/issue-aggregate'
-import { IssueCreatedPayload, IssueStatus, LinkedPayload, StoredEvent } from '../features/issues/issue-events'
+import { IssueCreatedPayload, IssueEvent, IssueStatus, LinkedPayload, StoredEvent } from '../features/issues/issue-events'
 import { sprintRepository } from '../repositories/sprint.repository'
 import { ConflictError, NotFoundError } from '../errors/errors'
+import { projectIssueEvent } from '../features/issues/issue-projector'
+import {prisma} from '../db/prisma'
+import app from '../app'
 
 async function loadState(issueId: string): Promise<IssueState> {
     const events = await eventStore.getEvents(issueId)
     return hydrate(issueId, events as StoredEvent[])
+}
+
+async function appendAndProject(issueId:string, expectedVersion:number, event:IssueEvent){
+    const stored = await eventStore.append(issueId, expectedVersion, event)
+    try{
+        await projectIssueEvent(prisma, stored as unknown as StoredEvent)
+    } catch(err){
+        console.error(`Projection failed for event ${stored.id} ${event.type} on issue ${issueId}`, err)
+    }
+    return stored
 }
 
 export const issueService = {
@@ -23,7 +36,7 @@ export const issueService = {
         const state = createInitialState(issueId)
 
         const event = issueCommands.create(state, data)
-        await eventStore.append(issueId, state.version, event)
+        await appendAndProject(issueId, state.version, event)
 
         return applyEvent(state, event)
     },
@@ -37,56 +50,56 @@ export const issueService = {
     changeStatus: async(issueId: string, to: IssueStatus, changedBy: string): Promise<IssueState> => {
         const state = await loadState(issueId)
         const event = issueCommands.changeStatus(state, to, changedBy)
-        await eventStore.append(issueId, state.version, event)
+        await appendAndProject(issueId, state.version, event)
         return applyEvent(state, event)
     },
 
     assign: async(issueId: string, userId: string, assignedBy: string): Promise<IssueState> => {
         const state = await loadState(issueId)
         const event = issueCommands.assign(state, userId, assignedBy)
-        await eventStore.append(issueId, state.version, event)
+        await appendAndProject(issueId, state.version, event)
         return applyEvent(state, event)
     },
 
     unassign: async(issueId: string, userId: string, removedBy: string): Promise<IssueState> => {
         const state = await loadState(issueId)
         const event = issueCommands.unassign(state, userId, removedBy)
-        await eventStore.append(issueId, state.version, event)
+        await appendAndProject(issueId, state.version, event)
         return applyEvent(state, event)
     },
 
     comment: async(issueId: string, body: string, authorId: string): Promise<IssueState> => {
         const state = await loadState(issueId)
         const event = issueCommands.comment(state, { commentId: crypto.randomUUID(), body, authorId })
-        await eventStore.append(issueId, state.version, event)
+        await appendAndProject(issueId, state.version, event)
         return applyEvent(state, event)
     },
 
     addLabel: async(issueId: string, label: string, addedBy: string): Promise<IssueState> => {
         const state = await loadState(issueId)
         const event = issueCommands.addLabel(state, label, addedBy)
-        await eventStore.append(issueId, state.version, event)
+        await appendAndProject(issueId, state.version, event)
         return applyEvent(state, event)
     },
 
     link: async(issueId: string, linkedIIssueId: string, linkType: LinkedPayload['linkType'], linkedBy: string): Promise<IssueState> => {
         const state = await loadState(issueId)
         const event = issueCommands.link(state, { linkedIIssueId, linkType, linkedBy })
-        await eventStore.append(issueId, state.version, event)
+        await appendAndProject(issueId, state.version, event)
         return applyEvent(state, event)
     },
 
     close: async(issueId: string, closedBy: string, reason?: string): Promise<IssueState> => {
         const state = await loadState(issueId)
         const event = issueCommands.close(state, { closedBy, reason })
-        await eventStore.append(issueId, state.version, event)
+        await appendAndProject(issueId, state.version, event)
         return applyEvent(state, event)
     },
 
     reopen: async(issueId: string, reopenedBy: string): Promise<IssueState> => {
         const state = await loadState(issueId)
         const event = issueCommands.reopen(state, { reopenedBy })
-        await eventStore.append(issueId, state.version, event)
+        await appendAndProject(issueId, state.version, event)
         return applyEvent(state, event)
     },
 
@@ -98,7 +111,7 @@ export const issueService = {
         if(sprint.workspaceId !== state.workspaceId) throw new ConflictError('Sprint does not belong to this issue\'s workspace')
 
         const event = issueCommands.moveToSprint(state, { sprintId, movedBy })
-        await eventStore.append(issueId, state.version, event)
+        await appendAndProject(issueId, state.version, event)
         return applyEvent(state, event)
     }
 }

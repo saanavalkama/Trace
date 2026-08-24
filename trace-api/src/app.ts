@@ -6,6 +6,7 @@ import authRouter from './routes/auth.routes'
 import workspaceRouter from './routes/workspace.routes'
 import inviteRouter from './routes/invite.routes'
 import issueRouter from './routes/issue.routes'
+import issueReadRouter from './routes/issue.read.routes'
 import sprintRouter from './routes/sprint.routes'
 import { healthRouter } from './routes/health'
 import { env } from './config/env'
@@ -24,6 +25,7 @@ app.use('/auth', authRouter)
 app.use('/workspaces',workspaceRouter)
 app.use('/invites',inviteRouter)
 app.use('/workspaces/:id/issues', issueRouter)
+app.use('/workspaces/:id/sprints/:sprintId/board', issueReadRouter)
 app.use('/workspaces/:id/sprints', sprintRouter)
 
 // Centralized error handler: never leak internals (stack traces, DB errors)
