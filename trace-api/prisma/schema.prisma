@@ -132,3 +132,19 @@ model Event{
   @@index([aggregateId])
   @@map("events")
 }
+
+model IssueBoardProjection{
+  issueId String @id @map("issue_id")
+  workspaceId String @map("workplace_id")
+  sprintId String? @map("sprint_id")
+  title String
+  status String
+  assigneeIds String[] @map("assignee_ids")
+  labels String[]
+  closed Boolean @default(false)
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([workspaceId, status])
+  @@index([sprintId])
+  @@map("issue_board_projection")
+}

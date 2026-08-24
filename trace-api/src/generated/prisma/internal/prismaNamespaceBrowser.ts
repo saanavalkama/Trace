@@ -58,7 +58,8 @@ export const ModelName = {
   WorkspaceInvite: 'WorkspaceInvite',
   RefreshToken: 'RefreshToken',
   Sprint: 'Sprint',
-  Event: 'Event'
+  Event: 'Event',
+  IssueBoardProjection: 'IssueBoardProjection'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -172,6 +173,21 @@ export const EventScalarFieldEnum = {
 } as const
 
 export type EventScalarFieldEnum = (typeof EventScalarFieldEnum)[keyof typeof EventScalarFieldEnum]
+
+
+export const IssueBoardProjectionScalarFieldEnum = {
+  issueId: 'issueId',
+  workspaceId: 'workspaceId',
+  sprintId: 'sprintId',
+  title: 'title',
+  status: 'status',
+  assigneeIds: 'assigneeIds',
+  labels: 'labels',
+  closed: 'closed',
+  updatedAt: 'updatedAt'
+} as const
+
+export type IssueBoardProjectionScalarFieldEnum = (typeof IssueBoardProjectionScalarFieldEnum)[keyof typeof IssueBoardProjectionScalarFieldEnum]
 
 
 export const SortOrder = {

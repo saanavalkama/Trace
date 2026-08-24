@@ -404,7 +404,8 @@ export const ModelName = {
   WorkspaceInvite: 'WorkspaceInvite',
   RefreshToken: 'RefreshToken',
   Sprint: 'Sprint',
-  Event: 'Event'
+  Event: 'Event',
+  IssueBoardProjection: 'IssueBoardProjection'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -420,7 +421,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "loginCode" | "workspace" | "workspaceMember" | "workspaceInvite" | "refreshToken" | "sprint" | "event"
+    modelProps: "user" | "loginCode" | "workspace" | "workspaceMember" | "workspaceInvite" | "refreshToken" | "sprint" | "event" | "issueBoardProjection"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -1016,6 +1017,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    IssueBoardProjection: {
+      payload: Prisma.$IssueBoardProjectionPayload<ExtArgs>
+      fields: Prisma.IssueBoardProjectionFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.IssueBoardProjectionFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$IssueBoardProjectionPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.IssueBoardProjectionFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$IssueBoardProjectionPayload>
+        }
+        findFirst: {
+          args: Prisma.IssueBoardProjectionFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$IssueBoardProjectionPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.IssueBoardProjectionFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$IssueBoardProjectionPayload>
+        }
+        findMany: {
+          args: Prisma.IssueBoardProjectionFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$IssueBoardProjectionPayload>[]
+        }
+        create: {
+          args: Prisma.IssueBoardProjectionCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$IssueBoardProjectionPayload>
+        }
+        createMany: {
+          args: Prisma.IssueBoardProjectionCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.IssueBoardProjectionCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$IssueBoardProjectionPayload>[]
+        }
+        delete: {
+          args: Prisma.IssueBoardProjectionDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$IssueBoardProjectionPayload>
+        }
+        update: {
+          args: Prisma.IssueBoardProjectionUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$IssueBoardProjectionPayload>
+        }
+        deleteMany: {
+          args: Prisma.IssueBoardProjectionDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.IssueBoardProjectionUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.IssueBoardProjectionUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$IssueBoardProjectionPayload>[]
+        }
+        upsert: {
+          args: Prisma.IssueBoardProjectionUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$IssueBoardProjectionPayload>
+        }
+        aggregate: {
+          args: Prisma.IssueBoardProjectionAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateIssueBoardProjection>
+        }
+        groupBy: {
+          args: Prisma.IssueBoardProjectionGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.IssueBoardProjectionGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.IssueBoardProjectionCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.IssueBoardProjectionCountAggregateOutputType> | number
+        }
+      }
+    }
   }
 } & {
   other: {
@@ -1150,6 +1225,21 @@ export const EventScalarFieldEnum = {
 } as const
 
 export type EventScalarFieldEnum = (typeof EventScalarFieldEnum)[keyof typeof EventScalarFieldEnum]
+
+
+export const IssueBoardProjectionScalarFieldEnum = {
+  issueId: 'issueId',
+  workspaceId: 'workspaceId',
+  sprintId: 'sprintId',
+  title: 'title',
+  status: 'status',
+  assigneeIds: 'assigneeIds',
+  labels: 'labels',
+  closed: 'closed',
+  updatedAt: 'updatedAt'
+} as const
+
+export type IssueBoardProjectionScalarFieldEnum = (typeof IssueBoardProjectionScalarFieldEnum)[keyof typeof IssueBoardProjectionScalarFieldEnum]
 
 
 export const SortOrder = {
@@ -1293,6 +1383,13 @@ export type JsonFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'J
  * Reference to a field of type 'QueryMode'
  */
 export type EnumQueryModeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'QueryMode'>
+    
+
+
+/**
+ * Reference to a field of type 'Boolean'
+ */
+export type BooleanFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Boolean'>
     
 
 
@@ -1468,6 +1565,7 @@ export type GlobalOmitConfig = {
   refreshToken?: Prisma.RefreshTokenOmit
   sprint?: Prisma.SprintOmit
   event?: Prisma.EventOmit
+  issueBoardProjection?: Prisma.IssueBoardProjectionOmit
 }
 
 /* Types for Logging */
