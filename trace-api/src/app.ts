@@ -7,6 +7,7 @@ import workspaceRouter from './routes/workspace.routes'
 import inviteRouter from './routes/invite.routes'
 import issueRouter from './routes/issue.routes'
 import issueReadRouter from './routes/issue.read.routes'
+import issueDetailReadRouter from './routes/issue-detail.read.routes'
 import sprintRouter from './routes/sprint.routes'
 import { healthRouter } from './routes/health'
 import { env } from './config/env'
@@ -25,6 +26,7 @@ app.use('/auth', authRouter)
 app.use('/workspaces',workspaceRouter)
 app.use('/invites',inviteRouter)
 app.use('/workspaces/:id/issues', issueRouter)
+app.use('/workspaces/:id/issues/:issueId', issueDetailReadRouter)
 app.use('/workspaces/:id/sprints/:sprintId/board', issueReadRouter)
 app.use('/workspaces/:id/sprints', sprintRouter)
 

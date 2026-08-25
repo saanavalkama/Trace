@@ -405,7 +405,8 @@ export const ModelName = {
   RefreshToken: 'RefreshToken',
   Sprint: 'Sprint',
   Event: 'Event',
-  IssueBoardProjection: 'IssueBoardProjection'
+  IssueBoardProjection: 'IssueBoardProjection',
+  IssueActivityProjection: 'IssueActivityProjection'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -421,7 +422,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "loginCode" | "workspace" | "workspaceMember" | "workspaceInvite" | "refreshToken" | "sprint" | "event" | "issueBoardProjection"
+    modelProps: "user" | "loginCode" | "workspace" | "workspaceMember" | "workspaceInvite" | "refreshToken" | "sprint" | "event" | "issueBoardProjection" | "issueActivityProjection"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -1091,6 +1092,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    IssueActivityProjection: {
+      payload: Prisma.$IssueActivityProjectionPayload<ExtArgs>
+      fields: Prisma.IssueActivityProjectionFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.IssueActivityProjectionFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$IssueActivityProjectionPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.IssueActivityProjectionFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$IssueActivityProjectionPayload>
+        }
+        findFirst: {
+          args: Prisma.IssueActivityProjectionFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$IssueActivityProjectionPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.IssueActivityProjectionFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$IssueActivityProjectionPayload>
+        }
+        findMany: {
+          args: Prisma.IssueActivityProjectionFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$IssueActivityProjectionPayload>[]
+        }
+        create: {
+          args: Prisma.IssueActivityProjectionCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$IssueActivityProjectionPayload>
+        }
+        createMany: {
+          args: Prisma.IssueActivityProjectionCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.IssueActivityProjectionCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$IssueActivityProjectionPayload>[]
+        }
+        delete: {
+          args: Prisma.IssueActivityProjectionDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$IssueActivityProjectionPayload>
+        }
+        update: {
+          args: Prisma.IssueActivityProjectionUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$IssueActivityProjectionPayload>
+        }
+        deleteMany: {
+          args: Prisma.IssueActivityProjectionDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.IssueActivityProjectionUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.IssueActivityProjectionUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$IssueActivityProjectionPayload>[]
+        }
+        upsert: {
+          args: Prisma.IssueActivityProjectionUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$IssueActivityProjectionPayload>
+        }
+        aggregate: {
+          args: Prisma.IssueActivityProjectionAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateIssueActivityProjection>
+        }
+        groupBy: {
+          args: Prisma.IssueActivityProjectionGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.IssueActivityProjectionGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.IssueActivityProjectionCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.IssueActivityProjectionCountAggregateOutputType> | number
+        }
+      }
+    }
   }
 } & {
   other: {
@@ -1240,6 +1315,18 @@ export const IssueBoardProjectionScalarFieldEnum = {
 } as const
 
 export type IssueBoardProjectionScalarFieldEnum = (typeof IssueBoardProjectionScalarFieldEnum)[keyof typeof IssueBoardProjectionScalarFieldEnum]
+
+
+export const IssueActivityProjectionScalarFieldEnum = {
+  id: 'id',
+  issueId: 'issueId',
+  eventType: 'eventType',
+  actorId: 'actorId',
+  payload: 'payload',
+  createdAt: 'createdAt'
+} as const
+
+export type IssueActivityProjectionScalarFieldEnum = (typeof IssueActivityProjectionScalarFieldEnum)[keyof typeof IssueActivityProjectionScalarFieldEnum]
 
 
 export const SortOrder = {
@@ -1566,6 +1653,7 @@ export type GlobalOmitConfig = {
   sprint?: Prisma.SprintOmit
   event?: Prisma.EventOmit
   issueBoardProjection?: Prisma.IssueBoardProjectionOmit
+  issueActivityProjection?: Prisma.IssueActivityProjectionOmit
 }
 
 /* Types for Logging */

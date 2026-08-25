@@ -148,3 +148,15 @@ model IssueBoardProjection{
   @@index([sprintId])
   @@map("issue_board_projection")
 }
+
+model IssueActivityProjection{
+  id String @id @default(uuid())
+  issueId String @map("issue_id")
+  eventType String @map("event_type")
+  actorId String @map("actor_id")
+  payload Json
+  createdAt DateTime @map("created_at")
+
+  @@index([issueId, createdAt])
+  @@map("issue_activity_projection")
+}

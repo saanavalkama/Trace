@@ -59,7 +59,8 @@ export const ModelName = {
   RefreshToken: 'RefreshToken',
   Sprint: 'Sprint',
   Event: 'Event',
-  IssueBoardProjection: 'IssueBoardProjection'
+  IssueBoardProjection: 'IssueBoardProjection',
+  IssueActivityProjection: 'IssueActivityProjection'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -188,6 +189,18 @@ export const IssueBoardProjectionScalarFieldEnum = {
 } as const
 
 export type IssueBoardProjectionScalarFieldEnum = (typeof IssueBoardProjectionScalarFieldEnum)[keyof typeof IssueBoardProjectionScalarFieldEnum]
+
+
+export const IssueActivityProjectionScalarFieldEnum = {
+  id: 'id',
+  issueId: 'issueId',
+  eventType: 'eventType',
+  actorId: 'actorId',
+  payload: 'payload',
+  createdAt: 'createdAt'
+} as const
+
+export type IssueActivityProjectionScalarFieldEnum = (typeof IssueActivityProjectionScalarFieldEnum)[keyof typeof IssueActivityProjectionScalarFieldEnum]
 
 
 export const SortOrder = {
