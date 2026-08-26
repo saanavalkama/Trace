@@ -405,7 +405,9 @@ export const ModelName = {
   RefreshToken: 'RefreshToken',
   Sprint: 'Sprint',
   Event: 'Event',
-  IssueBoardProjection: 'IssueBoardProjection'
+  IssueSnapshot: 'IssueSnapshot',
+  IssueBoardProjection: 'IssueBoardProjection',
+  IssueActivityProjection: 'IssueActivityProjection'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -421,7 +423,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "loginCode" | "workspace" | "workspaceMember" | "workspaceInvite" | "refreshToken" | "sprint" | "event" | "issueBoardProjection"
+    modelProps: "user" | "loginCode" | "workspace" | "workspaceMember" | "workspaceInvite" | "refreshToken" | "sprint" | "event" | "issueSnapshot" | "issueBoardProjection" | "issueActivityProjection"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -1017,6 +1019,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    IssueSnapshot: {
+      payload: Prisma.$IssueSnapshotPayload<ExtArgs>
+      fields: Prisma.IssueSnapshotFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.IssueSnapshotFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$IssueSnapshotPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.IssueSnapshotFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$IssueSnapshotPayload>
+        }
+        findFirst: {
+          args: Prisma.IssueSnapshotFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$IssueSnapshotPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.IssueSnapshotFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$IssueSnapshotPayload>
+        }
+        findMany: {
+          args: Prisma.IssueSnapshotFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$IssueSnapshotPayload>[]
+        }
+        create: {
+          args: Prisma.IssueSnapshotCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$IssueSnapshotPayload>
+        }
+        createMany: {
+          args: Prisma.IssueSnapshotCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.IssueSnapshotCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$IssueSnapshotPayload>[]
+        }
+        delete: {
+          args: Prisma.IssueSnapshotDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$IssueSnapshotPayload>
+        }
+        update: {
+          args: Prisma.IssueSnapshotUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$IssueSnapshotPayload>
+        }
+        deleteMany: {
+          args: Prisma.IssueSnapshotDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.IssueSnapshotUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.IssueSnapshotUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$IssueSnapshotPayload>[]
+        }
+        upsert: {
+          args: Prisma.IssueSnapshotUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$IssueSnapshotPayload>
+        }
+        aggregate: {
+          args: Prisma.IssueSnapshotAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateIssueSnapshot>
+        }
+        groupBy: {
+          args: Prisma.IssueSnapshotGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.IssueSnapshotGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.IssueSnapshotCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.IssueSnapshotCountAggregateOutputType> | number
+        }
+      }
+    }
     IssueBoardProjection: {
       payload: Prisma.$IssueBoardProjectionPayload<ExtArgs>
       fields: Prisma.IssueBoardProjectionFieldRefs
@@ -1088,6 +1164,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         count: {
           args: Prisma.IssueBoardProjectionCountArgs<ExtArgs>
           result: runtime.Types.Utils.Optional<Prisma.IssueBoardProjectionCountAggregateOutputType> | number
+        }
+      }
+    }
+    IssueActivityProjection: {
+      payload: Prisma.$IssueActivityProjectionPayload<ExtArgs>
+      fields: Prisma.IssueActivityProjectionFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.IssueActivityProjectionFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$IssueActivityProjectionPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.IssueActivityProjectionFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$IssueActivityProjectionPayload>
+        }
+        findFirst: {
+          args: Prisma.IssueActivityProjectionFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$IssueActivityProjectionPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.IssueActivityProjectionFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$IssueActivityProjectionPayload>
+        }
+        findMany: {
+          args: Prisma.IssueActivityProjectionFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$IssueActivityProjectionPayload>[]
+        }
+        create: {
+          args: Prisma.IssueActivityProjectionCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$IssueActivityProjectionPayload>
+        }
+        createMany: {
+          args: Prisma.IssueActivityProjectionCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.IssueActivityProjectionCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$IssueActivityProjectionPayload>[]
+        }
+        delete: {
+          args: Prisma.IssueActivityProjectionDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$IssueActivityProjectionPayload>
+        }
+        update: {
+          args: Prisma.IssueActivityProjectionUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$IssueActivityProjectionPayload>
+        }
+        deleteMany: {
+          args: Prisma.IssueActivityProjectionDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.IssueActivityProjectionUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.IssueActivityProjectionUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$IssueActivityProjectionPayload>[]
+        }
+        upsert: {
+          args: Prisma.IssueActivityProjectionUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$IssueActivityProjectionPayload>
+        }
+        aggregate: {
+          args: Prisma.IssueActivityProjectionAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateIssueActivityProjection>
+        }
+        groupBy: {
+          args: Prisma.IssueActivityProjectionGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.IssueActivityProjectionGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.IssueActivityProjectionCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.IssueActivityProjectionCountAggregateOutputType> | number
         }
       }
     }
@@ -1227,6 +1377,18 @@ export const EventScalarFieldEnum = {
 export type EventScalarFieldEnum = (typeof EventScalarFieldEnum)[keyof typeof EventScalarFieldEnum]
 
 
+export const IssueSnapshotScalarFieldEnum = {
+  id: 'id',
+  aggregateId: 'aggregateId',
+  aggregateType: 'aggregateType',
+  version: 'version',
+  state: 'state',
+  createdAt: 'createdAt'
+} as const
+
+export type IssueSnapshotScalarFieldEnum = (typeof IssueSnapshotScalarFieldEnum)[keyof typeof IssueSnapshotScalarFieldEnum]
+
+
 export const IssueBoardProjectionScalarFieldEnum = {
   issueId: 'issueId',
   workspaceId: 'workspaceId',
@@ -1240,6 +1402,18 @@ export const IssueBoardProjectionScalarFieldEnum = {
 } as const
 
 export type IssueBoardProjectionScalarFieldEnum = (typeof IssueBoardProjectionScalarFieldEnum)[keyof typeof IssueBoardProjectionScalarFieldEnum]
+
+
+export const IssueActivityProjectionScalarFieldEnum = {
+  id: 'id',
+  issueId: 'issueId',
+  eventType: 'eventType',
+  actorId: 'actorId',
+  payload: 'payload',
+  createdAt: 'createdAt'
+} as const
+
+export type IssueActivityProjectionScalarFieldEnum = (typeof IssueActivityProjectionScalarFieldEnum)[keyof typeof IssueActivityProjectionScalarFieldEnum]
 
 
 export const SortOrder = {
@@ -1565,7 +1739,9 @@ export type GlobalOmitConfig = {
   refreshToken?: Prisma.RefreshTokenOmit
   sprint?: Prisma.SprintOmit
   event?: Prisma.EventOmit
+  issueSnapshot?: Prisma.IssueSnapshotOmit
   issueBoardProjection?: Prisma.IssueBoardProjectionOmit
+  issueActivityProjection?: Prisma.IssueActivityProjectionOmit
 }
 
 /* Types for Logging */

@@ -32,9 +32,9 @@ export class EventStore{
         }
     }
 
-    async getEvents(aggregateId:string){
+    async getEvents(aggregateId:string, afterVersion = 0){
         return this.prisma.event.findMany({
-            where:{aggregateId},
+            where:{aggregateId, version: {gt: afterVersion}},
             orderBy: {version:'asc'}
         })
     }

@@ -106,10 +106,24 @@ export function applyEvent(state: IssueState, event: IssueEvent): IssueState {
     }
 }
 
-export function hydrate(aggregateId: string, events: StoredEvent[]): IssueState {
-    let state = createInitialState(aggregateId)
+export const SNAPSHOT_INTERVAL = 20
+
+export function shouldSnapshot(version: number): boolean {
+    return version > 0 && version % SNAPSHOT_INTERVAL === 0
+}
+
+export interface StoredSnapshot {
+    version: number
+    state: unknown
+}
+
+export function hydrate(aggregateId: string, events: StoredEvent[], snapshot?: StoredSnapshot | null): IssueState {
+    let state: IssueState = snapshot
+        ? { ...(snapshot.state as IssueState), id: aggregateId, version: snapshot.version }
+        : createInitialState(aggregateId)
 
     for (const stored of events) {
+        if (stored.version <= state.version) continue
         const event = { type: stored.type, payload: stored.payload } as IssueEvent
         state = { ...applyEvent(state, event), version: stored.version }
     }

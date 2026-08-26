@@ -133,6 +133,19 @@ model Event{
   @@map("events")
 }
 
+model IssueSnapshot{
+  id String @id @default(uuid())
+  aggregateId String @map("aggregate_id")
+  aggregateType String @default("Issue") @map("aggregate_type")
+  version Int
+  state Json
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@unique([aggregateId, version])
+  @@index([aggregateId])
+  @@map("issue_snapshots")
+}
+
 model IssueBoardProjection{
   issueId String @id @map("issue_id")
   workspaceId String @map("workplace_id")
@@ -147,4 +160,16 @@ model IssueBoardProjection{
   @@index([workspaceId, status])
   @@index([sprintId])
   @@map("issue_board_projection")
+}
+
+model IssueActivityProjection{
+  id String @id @default(uuid())
+  issueId String @map("issue_id")
+  eventType String @map("event_type")
+  actorId String @map("actor_id")
+  payload Json
+  createdAt DateTime @map("created_at")
+
+  @@index([issueId, createdAt])
+  @@map("issue_activity_projection")
 }

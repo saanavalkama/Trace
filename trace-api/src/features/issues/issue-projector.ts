@@ -1,10 +1,18 @@
-import { PrismaClient } from "../../generated/prisma/client";
+import { Prisma, PrismaClient } from "../../generated/prisma/client";
 import { IssueEvent, StoredEvent } from "./issue-events";
+
+function actorOf(event: IssueEvent): string {
+  const p = event.payload as unknown as  Record<string, unknown>;
+  return (p.changedBy ?? p.assignedBy ?? p.removedBy ?? p.addedBy ?? p.linkedBy ??
+    p.closedBy ?? p.reopenedBy ?? p.movedBy ?? p.authorId ?? p.reporterId ?? 'unknown') as string;
+
+}
 
 export async function projectIssueEvent(prisma: PrismaClient, stored: StoredEvent){
     const event = {type:stored.type, payload:stored.payload} as IssueEvent
     const issueId = stored.aggregateId
 
+    // board projection
     switch(event.type){
         case 'IssueCreated':
             await prisma.issueBoardProjection.create({
@@ -80,9 +88,21 @@ export async function projectIssueEvent(prisma: PrismaClient, stored: StoredEven
                 where:{issueId},
                 data:{sprintId: event.payload.sprintId}
             })
-            break
-           
+            break    
     }
 
-    
+    //activity projection
+    await prisma.issueActivityProjection.create({
+        data:{
+           issueId,
+           eventType: event.type,
+           actorId: actorOf(event),
+           payload: event.payload as unknown as Prisma.InputJsonValue,
+           createdAt: stored.createdAt
+        }
+    })
 }
+
+
+
+    

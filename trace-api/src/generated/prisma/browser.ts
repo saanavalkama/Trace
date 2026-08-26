@@ -58,7 +58,17 @@ export type Sprint = Prisma.SprintModel
  */
 export type Event = Prisma.EventModel
 /**
+ * Model IssueSnapshot
+ * 
+ */
+export type IssueSnapshot = Prisma.IssueSnapshotModel
+/**
  * Model IssueBoardProjection
  * 
  */
 export type IssueBoardProjection = Prisma.IssueBoardProjectionModel
+/**
+ * Model IssueActivityProjection
+ * 
+ */
+export type IssueActivityProjection = Prisma.IssueActivityProjectionModel
