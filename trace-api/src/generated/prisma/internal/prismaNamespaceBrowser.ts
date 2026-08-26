@@ -59,6 +59,7 @@ export const ModelName = {
   RefreshToken: 'RefreshToken',
   Sprint: 'Sprint',
   Event: 'Event',
+  IssueSnapshot: 'IssueSnapshot',
   IssueBoardProjection: 'IssueBoardProjection',
   IssueActivityProjection: 'IssueActivityProjection'
 } as const
@@ -174,6 +175,18 @@ export const EventScalarFieldEnum = {
 } as const
 
 export type EventScalarFieldEnum = (typeof EventScalarFieldEnum)[keyof typeof EventScalarFieldEnum]
+
+
+export const IssueSnapshotScalarFieldEnum = {
+  id: 'id',
+  aggregateId: 'aggregateId',
+  aggregateType: 'aggregateType',
+  version: 'version',
+  state: 'state',
+  createdAt: 'createdAt'
+} as const
+
+export type IssueSnapshotScalarFieldEnum = (typeof IssueSnapshotScalarFieldEnum)[keyof typeof IssueSnapshotScalarFieldEnum]
 
 
 export const IssueBoardProjectionScalarFieldEnum = {

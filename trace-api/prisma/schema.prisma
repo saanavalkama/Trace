@@ -133,6 +133,19 @@ model Event{
   @@map("events")
 }
 
+model IssueSnapshot{
+  id String @id @default(uuid())
+  aggregateId String @map("aggregate_id")
+  aggregateType String @default("Issue") @map("aggregate_type")
+  version Int
+  state Json
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@unique([aggregateId, version])
+  @@index([aggregateId])
+  @@map("issue_snapshots")
+}
+
 model IssueBoardProjection{
   issueId String @id @map("issue_id")
   workspaceId String @map("workplace_id")
