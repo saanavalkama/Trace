@@ -7,7 +7,7 @@ export const emailSender = {
     
     sendOtpEmail:async(email:string, code:string)=>{
         const {data, error} = await resend.emails.send({
-            from:'jalkiapp@outlook.com',
+            from:'onboarding@resend.dev',
             to:email,
             subject: 'Your login code',
             text: `Your code is ${code}. It expires in 5 minutes.`,
@@ -22,7 +22,7 @@ export const emailSender = {
         const link = `${env.frontendUrl}/invite/accept?token=${token}`
 
         const { error } = await resend.emails.send({
-            from: 'jalkiapp@outlook.com', // or onboarding@resend.dev for now
+            from: 'onboarding@resend.dev', // or onboarding@resend.dev for now
             to: email,
         subject: `You've been invited to join ${workspaceName}`,
         text: `You've been invited to join ${workspaceName}. Click here to accept: ${link}`,

@@ -1,5 +1,5 @@
 import { Request, Response } from "express"
-import { createWorkspaceSchema, sendInviteSchema, updateWorkspaceSchema } from "../validationSchemas/workpace.schema"
+import { createWorkspaceSchema, sendInviteSchema, sendManyInvitesSchema, updateWorkspaceSchema } from "../validationSchemas/workpace.schema"
 import { workspaceService } from "../services/workspace.service"
 import { ConflictError, NotFoundError } from "../errors/errors"
 
@@ -10,13 +10,13 @@ export const workspaceController = {
         if(!result.success){
             return res.status(400).json({errors: result.error.flatten().fieldErrors})
         }
-        const workspace = await workspaceService.create(result.data.name, req.userId!)
-        res.status(201).json(workspace)
+        const dto = await workspaceService.create(result.data.name, req.userId!)
+        res.status(201).json(dto)
     },
 
     getWorkspaces:async(req:Request, res:Response) =>{
-        const workspaces = await workspaceService.getWorkspacesByUserId(req.userId!)
-        res.status(200).json(workspaces)
+        const workspacesDto = await workspaceService.getWorkspacesByUserId(req.userId!)
+        res.status(200).json(workspacesDto)
     },
 
     getWorkspaceById: async(req:Request, res:Response) => {
@@ -99,6 +99,17 @@ export const workspaceController = {
         }
 
         res.status(201).json(serviceResult.data)
+    },
+
+    sendManyInvites: async(req:Request,res:Response) => {
+        const workspaceId = req.params.id as string
+        const result = sendManyInvitesSchema.safeParse(req.body)
+        if(!result.success){
+            return res.status(400).json({errors: result.error.flatten().fieldErrors})
+        }
+        const data = await workspaceService.sendManyInvites(workspaceId, result.data.invites)
+
+        res.status(200).json(data)
     },
 
     getInvites: async(req:Request, res:Response) => {

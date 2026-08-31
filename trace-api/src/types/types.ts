@@ -45,3 +45,16 @@ export interface UpdateSprintData{
     startDate?:Date,
     endDate?:Date
 }
+
+export interface MyWorkspaceDto{
+    name:string, 
+    id:string, 
+    role:WorkspaceRole
+}
+
+export interface CreateWorkspaceDto {
+    id: string
+    name: string
+    role: WorkspaceRole 
+    createdAt: Date
+}
