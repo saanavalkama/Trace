@@ -12,3 +12,9 @@ export interface VerifyCodeResponse{
     user:AuthUser,
     accessToken:string
 }
+
+export interface MyWorkspace{
+    name:string,
+    id:string, 
+    role: 'owner' | 'admin' | 'member'
+}
