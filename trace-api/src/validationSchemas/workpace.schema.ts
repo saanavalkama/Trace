@@ -22,6 +22,17 @@ export const sendInviteSchema = z.object({
     role: z.enum([WorkspaceRole.admin, WorkspaceRole.member, WorkspaceRole.owner])
 })
 
+export const sendManyInvitesSchema = z.object({
+    invites: z
+        .array(sendInviteSchema)
+        .min(1, 'At least one invite is required')
+        .max(50, 'Cannot send more than 50 invites at once')
+        .refine(
+            (invites) => new Set(invites.map(i => i.email.toLowerCase())).size === invites.length,
+            { message: 'Duplicate email addresses in the same batch' }
+        ),
+})
+
 export type CreateWorkspaceInput = z.infer<typeof createWorkspaceSchema>
 export type UpdateWorkspaceInput = z.infer<typeof updateWorkspaceSchema>
 export type SendInviteInput = z.infer<typeof sendInviteSchema>

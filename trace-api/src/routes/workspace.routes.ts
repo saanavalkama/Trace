@@ -45,6 +45,12 @@ router.post(
     workspaceController.sendInvite
 )
 
+router.post(
+    '/:id/many-invites',
+    requireRole(WorkspaceRole.admin, WorkspaceRole.owner),
+    workspaceController.sendManyInvites
+)
+
 router.get(
     '/:id/invites',
     requireRole(WorkspaceRole.admin, WorkspaceRole.owner),

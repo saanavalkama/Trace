@@ -21,14 +21,21 @@ export const workspaceRepository = {
 
     getWorkspacesByUserId: async(userId:string) => {
         return await prisma.workspace.findMany({
-            where: {members: {some: {userId}}}
+            where: {members: {some: {userId}}},
+            include: {members:{
+                where: {userId},
+                select:{role:true}
+            }
+            }
         })
     },
 
     getWorkspaceById: async(id:string) => {
         return await prisma.workspace.findUnique({
             where:{id},
-            include:{members:true}
+            include:{
+                members:true
+            }
         })
     },
 

@@ -1,7 +1,7 @@
 import { Prisma } from "../generated/prisma/client"
 import { WorkspaceRole } from "../generated/prisma/enums"
 import { workspaceRepository } from "../repositories/workspace.repository"
-import { SendInviteDto, SendInviteServiceData, UpdateWorkspaceData } from "../types/types"
+import { CreateWorkspaceDto, MyWorkspaceDto, SendInviteDto, SendInviteServiceData, UpdateWorkspaceData } from "../types/types"
 import { ConflictError, NotFoundError } from "../errors/errors"
 import { inviteRepository } from "../repositories/invite.repository"
 import { emailSender } from "../lib/emailSender"
@@ -10,14 +10,26 @@ const INVITE_TTL_MS = 7*24*60*60*1000
 
 export const workspaceService = {
 
-    create:async(name:string, userId:string)=>{
+    create:async(name:string, userId:string):Promise<CreateWorkspaceDto>=>{
         const workspace = await workspaceRepository.createWithOwner(name, userId)
-        return workspace
+        const dto:CreateWorkspaceDto = {
+            id:workspace.id,
+            name:workspace.name,
+            role:'owner',
+            createdAt:workspace.createdAt
+        }
+        return dto
     },
 
-    getWorkspacesByUserId: async(userId:string) => {
+    getWorkspacesByUserId: async(userId:string):Promise<MyWorkspaceDto[]> => {
         const workspaces = await workspaceRepository.getWorkspacesByUserId(userId)
-        return workspaces
+
+        const dto = workspaces.map((workspace)=>({
+            id:workspace.id,
+            name:workspace.name,
+            role: workspace.members[0].role
+        }))
+        return dto
     },
 
     getWorkspaceById: async(id:string) => {
@@ -51,7 +63,8 @@ export const workspaceService = {
     },
 
     sendInvite: async(workspaceId:string, data:SendInviteServiceData )=>{
-
+        //fixes: pass down workspace name so when send many emails it doesnt look up workspace name every time with members included
+        
         const cleanedEmail = data.email.toLocaleLowerCase().trim()
         const expiresAt = new Date(Date.now() + INVITE_TTL_MS)
 
@@ -96,6 +109,35 @@ export const workspaceService = {
         }
 
         return {error:null, data: dto}
+    },
+
+    sendManyInvites: async(workspaceId:string, invites: SendInviteServiceData[]) => {
+        //fixes: batch concurrent invites
+        const results = await Promise.allSettled(
+            invites.map((data)=>workspaceService.sendInvite(workspaceId, data))
+        )
+
+        const succeeded: SendInviteDto[] = []
+        const failed: { email: string; reason: string }[] = []
+
+        results.forEach((result, i) => {
+            const email = invites[i].email
+
+            if (result.status === 'rejected') {
+            // sendInvite THREW — unexpected error (email send failure, etc.)
+                failed.push({ email, reason: 'UNEXPECTED_ERROR' })
+                return
+            }
+
+        // sendInvite resolved — but might still carry a business-logic error object
+            if (result.value.error) {
+                failed.push({ email, reason: result.value.error })
+            } else {
+                succeeded.push(result.value.data)
+            }
+        })
+
+        return { succeeded, failed }
     },
 
     getInvites: async(workspaceId:string) => {
