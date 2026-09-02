@@ -33,7 +33,7 @@ export default function HomePage() {
       </nav>
 
       <section className="flex flex-grow flex-col items-center gap-5 px-8 pt-24 pb-18 text-center max-lg:gap-4 max-lg:px-5 max-lg:pt-14 max-lg:pb-12">
-        <span className="rounded-full border border-accent-border bg-accent-bg px-3 py-1 text-xs font-semibold tracking-wide text-accent uppercase">
+        <span className="rounded-full border border-accent-border bg-accent-bg px-3 py-1 text-xs font-semibold tracking-wide text-brand uppercase">
           Now in early access
         </span>
         <h1 className="max-w-[720px] text-[56px] leading-[1.15] tracking-[-1.68px] text-text-h max-lg:text-4xl">
@@ -46,7 +46,7 @@ export default function HomePage() {
         <div className="mt-2 flex gap-3 max-lg:w-full max-lg:max-w-[280px] max-lg:flex-col">
           <Link
             to="/login"
-            className="rounded-md border border-accent-border bg-accent-bg px-5 py-2.5 text-base font-medium text-accent transition hover:shadow-brand"
+            className="rounded-md border border-accent-border bg-accent-bg px-5 py-2.5 text-base font-medium text-brand transition hover:shadow-brand"
           >
             Get started
           </Link>

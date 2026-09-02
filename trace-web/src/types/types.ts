@@ -51,3 +51,43 @@ export interface SendManyInvitesResult {
     succeeded: SendInviteDto[]
     failed: { email: string; reason: string }[]
 }
+
+export interface SprintSummaryResponse {
+    id: string
+    name: string
+    status: string
+}
+
+export interface CreateSprintData {
+    workspaceId: string
+    name: string
+    startDate: string
+    endDate: string
+}
+
+export interface SprintResponse {
+    id: string
+    workspaceId: string
+    name: string
+    status: 'planned' | 'active' | 'completed'
+    startDate: string
+    endDate: string
+    createdAt: string
+}
+
+export interface MemberSummaryResponse {
+    id: string
+    email: string
+    role: 'owner' | 'admin' | 'member'
+}
+
+export interface BoardIssueResponse{
+      issueId: string,
+        sprintId: string,
+        title: string,
+        status: 'open' | 'in_progress' | 'in_review' | 'closed',
+        assignees:MemberSummaryResponse[] 
+        labels: string[]
+        closed: boolean,
+        updatedAt: string
+}
