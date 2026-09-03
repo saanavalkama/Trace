@@ -19,6 +19,7 @@ export async function projectIssueEvent(prisma: PrismaClient, stored: StoredEven
                 data:{
                     issueId,
                     workspaceId: event.payload.workspaceId,
+                    sprintId: event.payload.sprintId ?? null,
                     title: event.payload.title,
                     status: 'open',
                     assigneeIds:[],

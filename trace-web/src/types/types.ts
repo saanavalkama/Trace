@@ -91,3 +91,26 @@ export interface BoardIssueResponse{
         closed: boolean,
         updatedAt: string
 }
+
+export interface IssueState {
+    id: string
+    version: number
+    exists: boolean
+    title: string
+    description: string
+    status: 'open' | 'in_progress' | 'in_review' | 'closed'
+    reporterId: string
+    workspaceId: string
+    assignees: string[]
+    labels: string[]
+    links: { linkedIIssueId: string, linkType: 'blocks' | 'blocked_by' | 'relates_to' | 'duplicates' }[]
+    sprintId: string | null
+    commentIds: string[]
+}
+
+export interface CreateIssueData{
+    title: string,
+    description: string,
+    workspaceId:string,
+    sprintId: string
+}

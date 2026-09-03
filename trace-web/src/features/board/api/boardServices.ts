@@ -1,5 +1,5 @@
 import { apiClient } from "@/api/client"
-import type { BoardIssueResponse } from "@/types/types"
+import type { BoardIssueResponse, CreateIssueData, IssueState } from "@/types/types"
 
 export const boardServices = {
     getBoardBySprint:async(workspaceId:string, sprintId:string): Promise<BoardIssueResponse[]> => {
@@ -19,6 +19,11 @@ export const boardServices = {
 
     reopenIssue: async(workspaceId:string, issueId:string): Promise<BoardIssueResponse> => {
         const response = await apiClient.post<BoardIssueResponse>(`/workspaces/${workspaceId}/issues/${issueId}/reopen`, {})
+        return response.data
+    },
+
+    createIssue: async(data:CreateIssueData):Promise<IssueState>=>{
+        const response = await apiClient.post<IssueState>(`/workspaces/${data.workspaceId}/issues`, data)
         return response.data
     }
 }

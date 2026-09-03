@@ -34,15 +34,17 @@ export default function BoardCard({ issue, disabled }: BoardCardProps) {
         >
             <p className="font-medium leading-snug">{issue.title}</p>
 
-            {issue.labels.length > 0 && (
+            {issue.labels.length > 0 ? (
                 <div className="flex flex-wrap gap-1">
                     {issue.labels.map((label) => (
                         <Badge key={label} variant="outline">{label}</Badge>
                     ))}
                 </div>
+            ) : (
+                <p className="text-xs text-muted-foreground">No labels yet</p>
             )}
 
-            {issue.assignees.length > 0 && (
+            {issue.assignees.length > 0 ? (
                 <div className="flex -space-x-2">
                     {issue.assignees.map((assignee) => (
                         <Tooltip key={assignee.id}>
@@ -55,6 +57,8 @@ export default function BoardCard({ issue, disabled }: BoardCardProps) {
                         </Tooltip>
                     ))}
                 </div>
+            ) : (
+                <p className="text-xs text-muted-foreground">No assignees yet</p>
             )}
         </div>
     )

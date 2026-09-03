@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react"
-import { useParams } from "react-router-dom"
+import { Link, Outlet, useParams } from "react-router-dom"
+import { Plus } from "lucide-react"
 import {
     DndContext,
     DragOverlay,
@@ -14,6 +15,7 @@ import { useBoard } from "../hooks/boardQueryHooks"
 import { useMoveIssue } from "../hooks/boardMutationHooks"
 import BoardColumn from "./BoardColumn"
 import BoardCard from "./BoardCard"
+import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
 import { TooltipProvider } from "@/components/ui/tooltip"
 import type { BoardIssueResponse } from "@/types/types"
@@ -57,51 +59,62 @@ export default function BoardView() {
         moveIssue.mutate({ issueId: issue.issueId, to: targetStatus })
     }
 
-    if (isPending) {
-        return (
-            <div className="flex h-full gap-4">
-                {COLUMNS.map((column) => (
-                    <div key={column.status} className="flex min-w-56 flex-1 basis-0 flex-col gap-2">
-                        <Skeleton className="h-5 w-24" />
-                        <Skeleton className="h-24 w-full" />
-                        <Skeleton className="h-24 w-full" />
-                    </div>
-                ))}
-            </div>
-        )
-    }
-
-    if (isError) {
-        return <p className="text-sm text-destructive">Failed to load board</p>
-    }
-
     return (
-        <TooltipProvider>
-            <DndContext
-                sensors={sensors}
-                collisionDetection={closestCorners}
-                onDragStart={handleDragStart}
-                onDragEnd={handleDragEnd}
-            >
-                <div className="flex h-full min-h-0 flex-col gap-2">
-                    <div className="flex min-h-0 flex-1 gap-3 overflow-x-auto pb-2">
-                        {COLUMNS.map((column) => (
-                            <BoardColumn
-                                key={column.status}
-                                status={column.status}
-                                title={column.title}
-                                issues={issuesByStatus.get(column.status) ?? []}
-                            />
-                        ))}
-                    </div>
-                    {moveIssue.isError && (
-                        <p className="text-sm text-destructive">Failed to move issue. Please try again.</p>
-                    )}
+        <div className="flex h-full min-h-0 flex-col gap-3">
+            <div className="flex items-center gap-2">
+                <Button asChild size="sm">
+                    <Link to={`/workspaces/${workspaceId}/sprints/${sprintId}/issues/create`}>
+                        <Plus />
+                        Add issue
+                    </Link>
+                </Button>
+            </div>
+
+            {isPending && (
+                <div className="flex h-full gap-4">
+                    {COLUMNS.map((column) => (
+                        <div key={column.status} className="flex min-w-56 flex-1 basis-0 flex-col gap-2">
+                            <Skeleton className="h-5 w-24" />
+                            <Skeleton className="h-24 w-full" />
+                            <Skeleton className="h-24 w-full" />
+                        </div>
+                    ))}
                 </div>
-                <DragOverlay>
-                    {activeIssue && <BoardCard issue={activeIssue} />}
-                </DragOverlay>
-            </DndContext>
-        </TooltipProvider>
+            )}
+
+            {isError && <p className="text-sm text-destructive">Failed to load board</p>}
+
+            {!isPending && !isError && (
+                <TooltipProvider>
+                    <DndContext
+                        sensors={sensors}
+                        collisionDetection={closestCorners}
+                        onDragStart={handleDragStart}
+                        onDragEnd={handleDragEnd}
+                    >
+                        <div className="flex min-h-0 flex-1 flex-col gap-2">
+                            <div className="flex min-h-0 flex-1 gap-3 overflow-x-auto pb-2">
+                                {COLUMNS.map((column) => (
+                                    <BoardColumn
+                                        key={column.status}
+                                        status={column.status}
+                                        title={column.title}
+                                        issues={issuesByStatus.get(column.status) ?? []}
+                                    />
+                                ))}
+                            </div>
+                            {moveIssue.isError && (
+                                <p className="text-sm text-destructive">Failed to move issue. Please try again.</p>
+                            )}
+                        </div>
+                        <DragOverlay>
+                            {activeIssue && <BoardCard issue={activeIssue} />}
+                        </DragOverlay>
+                    </DndContext>
+                </TooltipProvider>
+            )}
+
+            <Outlet />
+        </div>
     )
 }

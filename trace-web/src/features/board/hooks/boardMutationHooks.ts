@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { boardServices } from "../api/boardServices"
-import type { BoardIssueResponse } from "@/types/types"
+import type { BoardIssueResponse, CreateIssueData } from "@/types/types"
 
 interface MoveIssueVariables {
     issueId: string
@@ -34,6 +34,17 @@ export function useMoveIssue(workspaceId: string, sprintId: string) {
 
         onSettled: () => {
             queryClient.invalidateQueries({ queryKey })
+        }
+    })
+}
+
+export const useCreateIssue = () => {
+    const qc = useQueryClient()
+
+    return useMutation({
+        mutationFn:(data:CreateIssueData)=>boardServices.createIssue(data),
+        onSuccess:(_data,variables)=>{
+            qc.invalidateQueries({queryKey:['board',variables.workspaceId, variables.sprintId]})
         }
     })
 }

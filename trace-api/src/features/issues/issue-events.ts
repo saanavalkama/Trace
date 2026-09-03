@@ -1,10 +1,11 @@
 export type IssueStatus = 'open' | 'in_progress' | 'in_review' | 'closed'
 
 export interface IssueCreatedPayload {
-    title:string, 
-    description:string, 
+    title:string,
+    description:string,
     reporterId:string,
-    workspaceId:string
+    workspaceId:string,
+    sprintId?: string
 }
 
 export interface StatusChangedPayload{
