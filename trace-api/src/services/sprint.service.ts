@@ -1,5 +1,5 @@
 import { sprintRepository } from '../repositories/sprint.repository'
-import { CreateSprintData, UpdateSprintData } from '../types/types'
+import { CreateSprintData, SprintSummaryDto, UpdateSprintData } from '../types/types'
 import { ConflictError, NotFoundError } from '../errors/errors'
 
 export const sprintService = {
@@ -11,8 +11,10 @@ export const sprintService = {
         return sprintRepository.create(workspaceId, data)
     },
 
-    getByWorkspaceId: async(workspaceId:string) => {
-        return sprintRepository.getByWorkspaceId(workspaceId)
+    getByWorkspaceId: async(workspaceId:string):Promise<SprintSummaryDto[]> => {
+        const sprints = await sprintRepository.getByWorkspaceId(workspaceId)
+        const dto:SprintSummaryDto[]= sprints.map((s)=>({id:s.id, name:s.name, status: s.status}))
+        return dto
     },
 
     getById: async(id:string) => {

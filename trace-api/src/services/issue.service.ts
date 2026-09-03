@@ -44,6 +44,12 @@ async function appendAndProject(issueId:string, expectedVersion:number, event:Is
 export const issueService = {
 
     create: async(data: IssueCreatedPayload): Promise<IssueState> => {
+        if(data.sprintId){
+            const sprint = await sprintRepository.getById(data.sprintId)
+            if(!sprint) throw new NotFoundError('Sprint not found')
+            if(sprint.workspaceId !== data.workspaceId) throw new ConflictError('Sprint does not belong to this issue\'s workspace')
+        }
+
         const issueId = crypto.randomUUID()
         const state = createInitialState(issueId)
 

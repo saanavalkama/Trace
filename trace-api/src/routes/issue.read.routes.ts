@@ -4,7 +4,7 @@ import { requireRole } from "../middleware/requireRole.middleware";
 import { issueReadController } from "../controllers/issue.read.controller";
 import { WorkspaceRole } from "../generated/prisma/enums";
 
-const router = Router()
+const router = Router({ mergeParams: true })
 
 router.use(requireAuth)
 router.use(requireRole(WorkspaceRole.admin, WorkspaceRole.member, WorkspaceRole.owner))

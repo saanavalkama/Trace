@@ -58,3 +58,26 @@ export interface CreateWorkspaceDto {
     role: WorkspaceRole 
     createdAt: Date
 }
+
+export interface SprintSummaryDto {
+    id: string
+    name: string
+    status: SprintStatus
+}
+
+export interface MemberSummaryDto {
+    id: string
+    email: string
+    role: WorkspaceRole
+}
+
+export interface IssueBoardCardDto {
+    issueId: string
+    sprintId: string | null
+    title: string
+    status: string
+    assignees: MemberSummaryDto[]
+    labels: string[]
+    closed: boolean
+    updatedAt: Date
+}

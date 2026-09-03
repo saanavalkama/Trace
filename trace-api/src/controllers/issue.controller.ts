@@ -33,13 +33,19 @@ export const issueController = {
         }
         const {id: workspaceId} = req.params as {id:string}
 
-        const issue = await issueService.create({
-            title: result.data.title,
-            description: result.data.description,
-            reporterId: req.userId!,
-            workspaceId
-        })
-        res.status(201).json(issue)
+        try{
+            const issue = await issueService.create({
+                title: result.data.title,
+                description: result.data.description,
+                reporterId: req.userId!,
+                workspaceId,
+                sprintId: result.data.sprintId
+            })
+            res.status(201).json(issue)
+        } catch(err){
+            if(handleIssueError(err, res)) return
+            throw err
+        }
     },
 
     getById: async(req:Request, res:Response) => {

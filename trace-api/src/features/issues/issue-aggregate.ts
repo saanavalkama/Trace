@@ -64,7 +64,8 @@ export function applyEvent(state: IssueState, event: IssueEvent): IssueState {
                 description: event.payload.description,
                 reporterId: event.payload.reporterId,
                 workspaceId: event.payload.workspaceId,
-                status: 'open'
+                status: 'open',
+                sprintId: event.payload.sprintId ?? null
             }
 
         case 'StatusChanged':
