@@ -114,3 +114,43 @@ export interface CreateIssueData{
     workspaceId:string,
     sprintId: string
 }
+
+export interface ActorSummary{
+  id:string,
+  email:string
+}
+
+export interface IssueActivityProjection{
+  id:string,
+  issueId:string,
+  eventType:string,
+  actor: ActorSummary | null,
+  payload: Record<string, unknown>,
+  createdAt:string
+}
+
+export interface Comment{
+    id: string,
+    issueId: string,
+    body: string,
+    actor: ActorSummary | null,
+    createdAt: string,
+}
+
+export interface Label{
+    id:string, 
+    label:string
+}
+
+export interface AddCommentData{
+    workspaceId:string, 
+    issueId:string, 
+    body:string
+}
+
+export interface AddLabelData{
+    workspaceId:string,
+    issueId:string,
+    sprintId?:string,
+    label:string
+}

@@ -8,6 +8,7 @@ import WorkspaceLayout from "./features/workspaces/pages/WorkspaceLayout";
 import CreateSprintForm from "./features/sprints/components/CreateSprintForm";
 import BoardView from "./features/board/components/BoardView";
 import CreateIssueForm from "./features/board/components/CreateIssueForm";
+import IssueDetail from "./features/issues/components/IssueDetail";
 
 export const router = createBrowserRouter([
     {path: '/', element:<HomePage />},
@@ -28,6 +29,7 @@ export const router = createBrowserRouter([
                     {path:'issues/create', element:<CreateIssueForm />}
                 ]
             },
+            {path:'issues/:issueId', element:<IssueDetail />},
             {path:'settings', element:<p>coming</p>}
         ]
     }

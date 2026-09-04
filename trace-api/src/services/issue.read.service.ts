@@ -2,12 +2,20 @@ import { prisma } from '../db/prisma'
 import { issueQueries } from '../features/issues/issue-queries'
 import { sprintRepository } from '../repositories/sprint.repository'
 import { workspaceRepository } from '../repositories/workspace.repository'
+import { userRepository } from '../repositories/user.repository'
 import { NotFoundError } from '../errors/errors'
-import { IssueBoardCardDto, MemberSummaryDto } from '../types/types'
+import { CommentedPayload, LabelAddedPayload } from '../features/issues/issue-events'
+import { ActorDto, IssueActivityDto, IssueBoardCardDto, IssueCommentDto, IssueLabelDto, MemberSummaryDto } from '../types/types'
 
 async function assertIssueInWorkspace(workspaceId: string, issueId: string){
     const issue = await prisma.issueBoardProjection.findUnique({where:{issueId}})
     if(!issue || issue.workspaceId !== workspaceId) throw new NotFoundError('Issue not found')
+}
+
+async function resolveActors(actorIds: string[]): Promise<Map<string, ActorDto>> {
+    const uniqueIds = [...new Set(actorIds)]
+    const actors = await userRepository.findByIds(uniqueIds)
+    return new Map(actors.map((actor) => [actor.id, { id: actor.id, email: actor.email }]))
 }
 
 export const issueReadService = {
@@ -40,18 +48,42 @@ export const issueReadService = {
         }))
     },
 
-    getActivity: async(workspaceId: string, issueId: string) => {
+    getActivity: async(workspaceId: string, issueId: string): Promise<IssueActivityDto[]> => {
         await assertIssueInWorkspace(workspaceId, issueId)
-        return issueQueries.getActivity(issueId)
+        const activity = await issueQueries.getActivity(issueId)
+        const actorsById = await resolveActors(activity.map((entry) => entry.actorId))
+
+        return activity.map((entry) => ({
+            id: entry.id,
+            issueId: entry.issueId,
+            eventType: entry.eventType,
+            actor: actorsById.get(entry.actorId) ?? null,
+            payload: entry.payload,
+            createdAt: entry.createdAt
+        }))
     },
 
-    getComments: async(workspaceId: string, issueId: string) => {
+    getComments: async(workspaceId: string, issueId: string): Promise<IssueCommentDto[]> => {
         await assertIssueInWorkspace(workspaceId, issueId)
-        return issueQueries.getComments(issueId)
+        const comments = await issueQueries.getComments(issueId)
+        const actorsById = await resolveActors(comments.map((entry) => entry.actorId))
+
+        return comments.map((entry) => ({
+            id: entry.id,
+            issueId: entry.issueId,
+            body: (entry.payload as unknown as CommentedPayload).body,
+            actor: actorsById.get(entry.actorId) ?? null,
+            createdAt: entry.createdAt
+        }))
     },
 
-    getLabels: async(workspaceId: string, issueId: string) => {
+    getLabels: async(workspaceId: string, issueId: string): Promise<IssueLabelDto[]> => {
         await assertIssueInWorkspace(workspaceId, issueId)
-        return issueQueries.getLabels(issueId)
+        const labels = await issueQueries.getLabels(issueId)
+
+        return labels.map((entry) => ({
+            id: entry.id,
+            label: (entry.payload as unknown as LabelAddedPayload).label
+        }))
     }
 }

@@ -81,3 +81,30 @@ export interface IssueBoardCardDto {
     closed: boolean
     updatedAt: Date
 }
+
+export interface ActorDto {
+    id: string
+    email: string
+}
+
+export interface IssueActivityDto {
+    id: string
+    issueId: string
+    eventType: string
+    actor: ActorDto | null
+    payload: unknown
+    createdAt: Date
+}
+
+export interface IssueCommentDto {
+    id: string
+    issueId: string
+    body: string
+    actor: ActorDto | null
+    createdAt: Date
+}
+
+export interface IssueLabelDto {
+    id: string
+    label: string
+}

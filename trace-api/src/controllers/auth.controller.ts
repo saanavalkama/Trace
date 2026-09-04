@@ -84,6 +84,10 @@ export const authController = {
         }
     },
 
+    me: (req:Request, res:Response) => {
+        res.status(200).json({id: req.userId, email: req.email})
+    },
+
     logout: async(req:Request, res:Response) => {
         const refreshToken = req.cookies?.refreshToken 
 
