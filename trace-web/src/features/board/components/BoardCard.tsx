@@ -1,14 +1,10 @@
 import { useDraggable } from "@dnd-kit/core"
 import { CSS } from "@dnd-kit/utilities"
 import { Link, useParams } from "react-router-dom"
-import { cn } from "@/lib/utils"
+import { cn, initialsFromEmail } from "@/lib/utils"
 import { Badge } from "@/components/ui/badge"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 import type { BoardIssueResponse } from "@/types/types"
-
-function initialsFromEmail(email: string) {
-    return email.slice(0, 2).toUpperCase()
-}
 
 interface BoardCardProps {
     issue: BoardIssueResponse

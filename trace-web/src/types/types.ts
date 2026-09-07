@@ -154,3 +154,21 @@ export interface AddLabelData{
     sprintId?:string,
     label:string
 }
+
+export interface WorkspaceMember{
+    id:string
+    workspaceId:string
+    userId:string
+    role: 'owner' | 'admin' | 'member'
+    createdAt:string
+    user: {
+        id:string
+        email:string
+    }
+}
+
+export interface AssignData{
+    workspaceId:string,
+    issueId:string, 
+    userId:string
+}

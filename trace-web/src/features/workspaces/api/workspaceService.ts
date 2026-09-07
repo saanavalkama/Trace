@@ -1,5 +1,5 @@
 import { apiClient } from "../../../api/client"
-import type { CreateWorkspaceData, CreateWorkspaceResponseData, MyWorkspace, SendInvitesData, SendManyInvitesResult } from "../../../types/types"
+import type { CreateWorkspaceData, CreateWorkspaceResponseData, MyWorkspace, SendInvitesData, SendManyInvitesResult, WorkspaceMember } from "../../../types/types"
 
 export const workspaceService = {
     getWorkspaces: async():Promise<MyWorkspace[]> => {
@@ -13,5 +13,11 @@ export const workspaceService = {
     sendManyInvites: async(data:SendInvitesData):Promise<SendManyInvitesResult>=>{
         const response = await apiClient.post<SendManyInvitesResult>(`/workspaces/${data.workspaceId}/many-invites`,{invites:data.invites})
         return response.data
+    },
+
+    getMembers:async(workspaceId:string):Promise<WorkspaceMember[]>=>{
+        const response = await apiClient.get<WorkspaceMember[]>(`/workspaces/${workspaceId}/members`)
+        return response.data
+
     }
 }

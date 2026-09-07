@@ -1,6 +1,7 @@
 import { useParams } from "react-router-dom"
 import { useGetIssue, useGetLabels } from "../hooks/issueQueryHooks"
 import AddLabelSheet from "./AddLabelSheet"
+import AssigneeSection from "./AssigneeSection"
 import IssueActivity from "./IssueActivity"
 import IssueComments from "./IssueComments"
 import { Badge } from "@/components/ui/badge"
@@ -48,6 +49,8 @@ export default function IssueDetail() {
                     sprintId={issue?.sprintId ?? undefined}
                 />
             </div>
+
+            <AssigneeSection workspaceId={workspaceId!} issueId={issueId!} />
 
             <div className="flex min-h-0 flex-1 gap-4">
                 <IssueActivity workspaceId={workspaceId!} issueId={issueId!} />
