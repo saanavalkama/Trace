@@ -172,3 +172,9 @@ export interface AssignData{
     issueId:string, 
     userId:string
 }
+
+export interface UnassignData{
+    workspaceId:string, 
+    issueId:string, 
+    userId:string
+}

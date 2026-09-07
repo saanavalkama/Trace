@@ -1,6 +1,6 @@
-import { Loader2, UserPlus } from "lucide-react"
+import { Loader2, UserMinus, UserPlus } from "lucide-react"
 import { useGetIssue } from "../hooks/issueQueryHooks"
-import { useAssign } from "../hooks/issueMutationHooks"
+import { useAssign, useUnassingn } from "../hooks/issueMutationHooks"
 import { useGetMembers } from "@/features/workspaces/hooks/workspaceQueryHooks"
 import { useMe } from "@/features/auth/hooks/queries/authQueryHooks"
 import AssigneeAvatars from "./AssigneeAvatars"
@@ -19,6 +19,7 @@ export default function AssigneeSection({ workspaceId, issueId }: AssigneeSectio
     const { data: members, isPending: membersPending } = useGetMembers(workspaceId)
     const { data: me, isPending: mePending } = useMe()
     const { mutate: assign, isPending: assignPending } = useAssign()
+    const { mutate: unassign, isPending: unassignPending } = useUnassingn()
 
     const isPending = issuePending || membersPending
     const assigneeIds = issue?.assignees ?? []
@@ -29,10 +30,16 @@ export default function AssigneeSection({ workspaceId, issueId }: AssigneeSectio
     const isAssignedToMe = !!me && assigneeIds.includes(me.id)
     const myMembership = !!me && members?.find((member) => member.userId === me.id)
     const canAssignOthers = myMembership && (myMembership.role === "admin" || myMembership.role === "owner")
+    const myAssignPending = assignPending || unassignPending
 
     function handleAssignMyself() {
         if (!me) return
         assign({ workspaceId, issueId, userId: me.id })
+    }
+
+    function handleUnassignMyself() {
+        if (!me) return
+        unassign({ workspaceId, issueId, userId: me.id })
     }
 
     return (
@@ -42,16 +49,28 @@ export default function AssigneeSection({ workspaceId, issueId }: AssigneeSectio
                 <div className="flex flex-wrap items-center gap-2">
                     <AssigneeAvatars assignees={assignees} isPending={isPending} />
 
-                    {!isPending && !isAssignedToMe && (
-                        <Button
-                            variant="outline"
-                            size="sm"
-                            disabled={mePending || assignPending}
-                            onClick={handleAssignMyself}
-                        >
-                            {assignPending ? <Loader2 className="animate-spin" /> : <UserPlus />}
-                            Assign myself
-                        </Button>
+                    {!isPending && (
+                        isAssignedToMe ? (
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                disabled={mePending || myAssignPending}
+                                onClick={handleUnassignMyself}
+                            >
+                                {unassignPending ? <Loader2 className="animate-spin" /> : <UserMinus />}
+                                Unassign myself
+                            </Button>
+                        ) : (
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                disabled={mePending || myAssignPending}
+                                onClick={handleAssignMyself}
+                            >
+                                {assignPending ? <Loader2 className="animate-spin" /> : <UserPlus />}
+                                Assign myself
+                            </Button>
+                        )
                     )}
 
                     {!isPending && canAssignOthers && (

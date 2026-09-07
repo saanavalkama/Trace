@@ -1,7 +1,7 @@
 import { useState } from "react"
-import { Loader2, Users } from "lucide-react"
+import { Loader2, Users, X } from "lucide-react"
 import { useGetIssue } from "../hooks/issueQueryHooks"
-import { useAssign } from "../hooks/issueMutationHooks"
+import { useAssign, useUnassingn } from "../hooks/issueMutationHooks"
 import { useGetMembers } from "@/features/workspaces/hooks/workspaceQueryHooks"
 import { initialsFromEmail } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
@@ -26,6 +26,7 @@ export default function AssignMemberSheet({ workspaceId, issueId }: AssignMember
     const { data: issue } = useGetIssue(workspaceId, issueId)
     const { data: members } = useGetMembers(workspaceId)
     const { mutate: assign, isPending: assignPending, variables: assignVariables } = useAssign()
+    const { mutate: unassign, isPending: unassignPending, variables: unassignVariables } = useUnassingn()
 
     const assigneeIds = issue?.assignees ?? []
     const assignees = assigneeIds
@@ -34,6 +35,10 @@ export default function AssignMemberSheet({ workspaceId, issueId }: AssignMember
 
     function handleAssignMember(userId: string) {
         assign({ workspaceId, issueId, userId })
+    }
+
+    function handleUnassignMember(userId: string) {
+        unassign({ workspaceId, issueId, userId })
     }
 
     return (
@@ -59,6 +64,8 @@ export default function AssignMemberSheet({ workspaceId, issueId }: AssignMember
                         {members?.map((member) => {
                             const alreadyAssigned = assigneeIds.includes(member.userId)
                             const isAssigningThis = assignPending && assignVariables?.userId === member.userId
+                            const isUnassigningThis =
+                                unassignPending && unassignVariables?.userId === member.userId
 
                             return (
                                 <div
@@ -75,7 +82,16 @@ export default function AssignMemberSheet({ workspaceId, issueId }: AssignMember
                                     </div>
 
                                     {alreadyAssigned ? (
-                                        <span className="shrink-0 text-xs text-muted-foreground">Assigned</span>
+                                        <Button
+                                            variant="ghost"
+                                            size="icon-sm"
+                                            className="shrink-0"
+                                            disabled={isUnassigningThis}
+                                            onClick={() => handleUnassignMember(member.userId)}
+                                            aria-label="Unassign"
+                                        >
+                                            {isUnassigningThis ? <Loader2 className="animate-spin" /> : <X />}
+                                        </Button>
                                     ) : (
                                         <Button
                                             variant="outline"

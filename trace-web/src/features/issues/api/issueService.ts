@@ -35,5 +35,10 @@ export const issueService = {
     assign: async(workspaceId:string, issueId:string, userId:string):Promise<IssueState> => {
         const response = await apiClient.post<IssueState>(`/workspaces/${workspaceId}/issues/${issueId}/assignees`, { userId })
         return response.data
+    },
+
+    unassingn: async(workspaceId:string, issueId:string, userId:string):Promise<IssueState> => {
+        const response = await apiClient.delete<IssueState>(`/workspaces/${workspaceId}/issues/${issueId}/assignees/${userId}`)
+        return response.data
     }
 }

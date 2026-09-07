@@ -1,4 +1,4 @@
-import type { AddCommentData, AddLabelData, AssignData } from "@/types/types"
+import type { AddCommentData, AddLabelData, AssignData, UnassignData } from "@/types/types"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { issueService } from "../api/issueService"
 
@@ -29,6 +29,17 @@ export const useAssign = () => {
     return useMutation({
         mutationFn:(data:AssignData)=>issueService.assign(data.workspaceId, data.issueId, data.userId),
         onSuccess:(_,{workspaceId, issueId})=>{
+            qc.invalidateQueries({queryKey:['issue', workspaceId, issueId]})
+            qc.invalidateQueries({queryKey:['issueActivity', workspaceId, issueId]})
+        }
+    })
+}
+
+export const useUnassingn = () => {
+    const qc = useQueryClient()
+    return useMutation({
+        mutationFn:(data:UnassignData) => issueService.unassingn(data.workspaceId, data.issueId, data.userId),
+        onSuccess:(_,{workspaceId, issueId}) => {
             qc.invalidateQueries({queryKey:['issue', workspaceId, issueId]})
             qc.invalidateQueries({queryKey:['issueActivity', workspaceId, issueId]})
         }
