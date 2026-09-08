@@ -138,8 +138,15 @@ export interface Comment{
 }
 
 export interface Label{
-    id:string, 
+    id:string,
     label:string
+}
+
+export interface IssueLink{
+    linkId:string
+    issueName:string
+    issueStatus:string
+    linkType: 'blocks' | 'blocked_by' | 'relates_to' | 'duplicates'
 }
 
 export interface AddCommentData{
@@ -174,7 +181,34 @@ export interface AssignData{
 }
 
 export interface UnassignData{
-    workspaceId:string, 
-    issueId:string, 
+    workspaceId:string,
+    issueId:string,
     userId:string
+}
+
+export interface LinkIssueData{
+    workspaceId:string
+    issueId:string
+    linkedIIssueId:string
+    linkType: 'blocks' | 'blocked_by' | 'relates_to' | 'duplicates'
+}
+
+export interface IssueSummary{
+    issueId:string
+    title:string
+    status: 'open' | 'in_progress' | 'in_review' | 'closed'
+    sprintId: string | null
+}
+
+export interface MoveToSprintData{
+    workspaceId:string
+    issueId:string
+    sprintId:string
+    previousSprintId?: string | null
+}
+
+export interface ReopenData{
+    workspaceId:string
+    issueId:string
+    sprintId?: string | null
 }

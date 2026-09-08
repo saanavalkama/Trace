@@ -54,5 +54,18 @@ export const issueReadController = {
             }
             throw err
         }
+    },
+
+    getLinks: async(req:Request, res:Response) => {
+        const {id: workspaceId, issueId} = req.params as {id:string, issueId:string}
+        try{
+            const links = await issueReadService.getLinks(workspaceId, issueId)
+            res.status(200).json(links)
+        } catch(err){
+            if(err instanceof NotFoundError){
+                return res.status(404).json({message: err.message})
+            }
+            throw err
+        }
     }
 }

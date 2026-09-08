@@ -82,6 +82,13 @@ export interface IssueBoardCardDto {
     updatedAt: Date
 }
 
+export interface IssueSummaryDto {
+    issueId: string
+    title: string
+    status: string
+    sprintId: string | null
+}
+
 export interface ActorDto {
     id: string
     email: string
@@ -94,6 +101,13 @@ export interface IssueActivityDto {
     actor: ActorDto | null
     payload: unknown
     createdAt: Date
+}
+
+export interface IssueLinkDto {
+    linkId: string
+    issueName: string
+    issueStatus: string
+    linkType: string
 }
 
 export interface IssueCommentDto {

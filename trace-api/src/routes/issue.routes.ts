@@ -10,6 +10,7 @@ router.use(requireAuth)
 router.use(requireRole(WorkspaceRole.owner, WorkspaceRole.admin, WorkspaceRole.member))
 
 router.post('/', issueController.create)
+router.get('/search', issueController.search)
 router.get('/:issueId', issueController.getById)
 router.patch('/:issueId/status', issueController.changeStatus)
 router.post('/:issueId/assignees', issueController.assign)

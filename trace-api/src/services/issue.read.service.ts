@@ -4,8 +4,8 @@ import { sprintRepository } from '../repositories/sprint.repository'
 import { workspaceRepository } from '../repositories/workspace.repository'
 import { userRepository } from '../repositories/user.repository'
 import { NotFoundError } from '../errors/errors'
-import { CommentedPayload, LabelAddedPayload } from '../features/issues/issue-events'
-import { ActorDto, IssueActivityDto, IssueBoardCardDto, IssueCommentDto, IssueLabelDto, MemberSummaryDto } from '../types/types'
+import { CommentedPayload, LabelAddedPayload, LinkedPayload } from '../features/issues/issue-events'
+import { ActorDto, IssueActivityDto, IssueBoardCardDto, IssueCommentDto, IssueLabelDto, IssueLinkDto, MemberSummaryDto } from '../types/types'
 
 async function assertIssueInWorkspace(workspaceId: string, issueId: string){
     const issue = await prisma.issueBoardProjection.findUnique({where:{issueId}})
@@ -16,6 +16,13 @@ async function resolveActors(actorIds: string[]): Promise<Map<string, ActorDto>>
     const uniqueIds = [...new Set(actorIds)]
     const actors = await userRepository.findByIds(uniqueIds)
     return new Map(actors.map((actor) => [actor.id, { id: actor.id, email: actor.email }]))
+}
+
+async function resolveLinkedIssues(issueIds: string[]): Promise<Map<string, { title: string, status: string }>> {
+    const uniqueIds = [...new Set(issueIds)]
+    if(uniqueIds.length === 0) return new Map()
+    const issues = await issueQueries.getByIds(uniqueIds)
+    return new Map(issues.map((issue) => [issue.issueId, { title: issue.title, status: issue.status }]))
 }
 
 export const issueReadService = {
@@ -85,5 +92,29 @@ export const issueReadService = {
             id: entry.id,
             label: (entry.payload as unknown as LabelAddedPayload).label
         }))
+    },
+
+    getLinks: async(workspaceId: string, issueId: string): Promise<IssueLinkDto[]> => {
+        await assertIssueInWorkspace(workspaceId, issueId)
+        const links = await issueQueries.getLinks(issueId)
+
+        const linkedIssuesById = await resolveLinkedIssues(
+            links.map((entry) => (entry.payload as unknown as LinkedPayload).linkedIIssueId)
+        )
+
+        return links
+            .map((entry): IssueLinkDto | undefined => {
+                const payload = entry.payload as unknown as LinkedPayload
+                const linkedIssue = linkedIssuesById.get(payload.linkedIIssueId)
+                if(!linkedIssue) return undefined
+
+                return {
+                    linkId: entry.id,
+                    issueName: linkedIssue.title,
+                    issueStatus: linkedIssue.status,
+                    linkType: payload.linkType
+                }
+            })
+            .filter((link): link is IssueLinkDto => link !== undefined)
     }
 }

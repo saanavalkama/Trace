@@ -36,3 +36,21 @@ export const useGetLabels = (workspaceId:string, issueId:string) => {
         enabled: !!workspaceId && !!issueId
     })
 }
+
+export const useGetLinks = (workspaceId:string, issueId:string) => {
+    return useQuery({
+        queryKey:['links', workspaceId, issueId],
+        queryFn:()=>issueService.getLinks(workspaceId, issueId),
+        staleTime: 60*1000,
+        enabled: !!workspaceId && !!issueId
+    })
+}
+
+export const useSearchIssues = (workspaceId:string, query?:string) => {
+    return useQuery({
+        queryKey:['issues', workspaceId, query],
+        queryFn:()=>issueService.search(workspaceId, query),
+        staleTime: 60 * 1000,
+        enabled: !!workspaceId
+    })
+}

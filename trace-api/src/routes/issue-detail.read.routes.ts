@@ -12,5 +12,6 @@ router.use(requireRole(WorkspaceRole.admin, WorkspaceRole.member, WorkspaceRole.
 router.get('/activity', issueReadController.getActivity)
 router.get('/comments', issueReadController.getComments)
 router.get('/labels', issueReadController.getLabels)
+router.get('/links', issueReadController.getLinks)
 
 export default router

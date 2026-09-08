@@ -1,5 +1,5 @@
 import { apiClient } from "@/api/client"
-import type { Comment, IssueActivityProjection, IssueState, Label } from "@/types/types"
+import type { Comment, IssueActivityProjection, IssueLink, IssueState, IssueSummary, Label } from "@/types/types"
 
 export const issueService = {
     getById: async(workspaceId:string, issueId:string):Promise<IssueState> => {
@@ -20,7 +20,12 @@ export const issueService = {
      getLabels: async(workspaceId:string, issueId:string):Promise<Label[]> => {
         const response = await apiClient.get<Label[]>(`/workspaces/${workspaceId}/issues/${issueId}/labels`)
         return response.data
-    }, 
+    },
+
+    getLinks: async(workspaceId:string, issueId:string):Promise<IssueLink[]> => {
+        const response = await apiClient.get<IssueLink[]>(`/workspaces/${workspaceId}/issues/${issueId}/links`)
+        return response.data
+    },
 
     addComment: async (workspaceId: string, issueId: string, body: string): Promise<IssueState> => {
         const response = await apiClient.post<IssueState>(`/workspaces/${workspaceId}/issues/${issueId}/comments`, { body })
@@ -39,6 +44,28 @@ export const issueService = {
 
     unassingn: async(workspaceId:string, issueId:string, userId:string):Promise<IssueState> => {
         const response = await apiClient.delete<IssueState>(`/workspaces/${workspaceId}/issues/${issueId}/assignees/${userId}`)
+        return response.data
+    },
+
+    link: async(workspaceId:string, issueId:string, linkedIIssueId:string, linkType:string):Promise<IssueState> => {
+        const response = await apiClient.post<IssueState>(`/workspaces/${workspaceId}/issues/${issueId}/links`, { linkedIIssueId, linkType })
+        return response.data
+    },
+
+    search: async(workspaceId:string, query?:string):Promise<IssueSummary[]> => {
+        const response = await apiClient.get<IssueSummary[]>(`/workspaces/${workspaceId}/issues/search`, {
+            params: query ? { query } : undefined
+        })
+        return response.data
+    },
+
+    moveToSprint: async(workspaceId:string, issueId:string, sprintId:string):Promise<IssueState> => {
+        const response = await apiClient.patch<IssueState>(`/workspaces/${workspaceId}/issues/${issueId}/sprint`, { sprintId })
+        return response.data
+    },
+
+    reopen: async(workspaceId:string, issueId:string):Promise<IssueState> => {
+        const response = await apiClient.post<IssueState>(`/workspaces/${workspaceId}/issues/${issueId}/reopen`)
         return response.data
     }
 }

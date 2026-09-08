@@ -59,6 +59,18 @@ export const issueController = {
         }
     },
 
+    search: async(req:Request, res:Response) => {
+        const {id: workspaceId} = req.params as {id:string}
+        const query = typeof req.query.query === 'string' ? req.query.query : undefined
+        try{
+            const issues = await issueService.search(workspaceId, query)
+            res.status(200).json(issues)
+        } catch(err){
+            if(handleIssueError(err, res)) return
+            throw err
+        }
+    },
+
     changeStatus: async(req:Request, res:Response) => {
         const result = changeStatusSchema.safeParse(req.body)
         if(!result.success){
