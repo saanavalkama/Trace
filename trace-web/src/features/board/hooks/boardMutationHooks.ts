@@ -32,8 +32,9 @@ export function useMoveIssue(workspaceId: string, sprintId: string) {
             if (context?.previous) queryClient.setQueryData(queryKey, context.previous)
         },
 
-        onSettled: () => {
+        onSettled: (_data, _error, variables) => {
             queryClient.invalidateQueries({ queryKey })
+            queryClient.invalidateQueries({ queryKey: ['issueActivity', workspaceId, variables.issueId] })
         }
     })
 }
@@ -48,3 +49,5 @@ export const useCreateIssue = () => {
         }
     })
 }
+
+

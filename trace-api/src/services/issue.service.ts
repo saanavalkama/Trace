@@ -13,6 +13,8 @@ import { IssueCreatedPayload, IssueEvent, IssueStatus, LinkedPayload, StoredEven
 import { sprintRepository } from '../repositories/sprint.repository'
 import { ConflictError, NotFoundError } from '../errors/errors'
 import { projectIssueEvent } from '../features/issues/issue-projector'
+import { issueQueries } from '../features/issues/issue-queries'
+import { IssueSummaryDto } from '../types/types'
 import {prisma} from '../db/prisma'
 import app from '../app'
 
@@ -64,6 +66,17 @@ export const issueService = {
         const state = await loadState(issueId)
         if(!state.exists) throw new NotFoundError('Issue not found')
         return state
+    },
+
+    search: async(workspaceId: string, query?: string): Promise<IssueSummaryDto[]> => {
+        const issues = await issueQueries.getIssuesByWorkspace(workspaceId, query)
+
+        return issues.map((issue) => ({
+            issueId: issue.issueId,
+            title: issue.title,
+            status: issue.status,
+            sprintId: issue.sprintId
+        }))
     },
 
     changeStatus: async(issueId: string, to: IssueStatus, changedBy: string): Promise<IssueState> => {

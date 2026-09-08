@@ -114,3 +114,101 @@ export interface CreateIssueData{
     workspaceId:string,
     sprintId: string
 }
+
+export interface ActorSummary{
+  id:string,
+  email:string
+}
+
+export interface IssueActivityProjection{
+  id:string,
+  issueId:string,
+  eventType:string,
+  actor: ActorSummary | null,
+  payload: Record<string, unknown>,
+  createdAt:string
+}
+
+export interface Comment{
+    id: string,
+    issueId: string,
+    body: string,
+    actor: ActorSummary | null,
+    createdAt: string,
+}
+
+export interface Label{
+    id:string,
+    label:string
+}
+
+export interface IssueLink{
+    linkId:string
+    issueName:string
+    issueStatus:string
+    linkType: 'blocks' | 'blocked_by' | 'relates_to' | 'duplicates'
+}
+
+export interface AddCommentData{
+    workspaceId:string, 
+    issueId:string, 
+    body:string
+}
+
+export interface AddLabelData{
+    workspaceId:string,
+    issueId:string,
+    sprintId?:string,
+    label:string
+}
+
+export interface WorkspaceMember{
+    id:string
+    workspaceId:string
+    userId:string
+    role: 'owner' | 'admin' | 'member'
+    createdAt:string
+    user: {
+        id:string
+        email:string
+    }
+}
+
+export interface AssignData{
+    workspaceId:string,
+    issueId:string, 
+    userId:string
+}
+
+export interface UnassignData{
+    workspaceId:string,
+    issueId:string,
+    userId:string
+}
+
+export interface LinkIssueData{
+    workspaceId:string
+    issueId:string
+    linkedIIssueId:string
+    linkType: 'blocks' | 'blocked_by' | 'relates_to' | 'duplicates'
+}
+
+export interface IssueSummary{
+    issueId:string
+    title:string
+    status: 'open' | 'in_progress' | 'in_review' | 'closed'
+    sprintId: string | null
+}
+
+export interface MoveToSprintData{
+    workspaceId:string
+    issueId:string
+    sprintId:string
+    previousSprintId?: string | null
+}
+
+export interface ReopenData{
+    workspaceId:string
+    issueId:string
+    sprintId?: string | null
+}

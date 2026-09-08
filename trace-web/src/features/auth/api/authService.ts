@@ -1,5 +1,5 @@
 import { apiClient } from "../../../api/client"
-import type { VerifyCodeData, VerifyCodeResponse } from "../../../types/types"
+import type { AuthUser, VerifyCodeData, VerifyCodeResponse } from "../../../types/types"
 
 export const authService = {
 
@@ -11,7 +11,11 @@ export const authService = {
     verifyCode:async(data: VerifyCodeData) =>{
         const response = await apiClient.post<VerifyCodeResponse>('/auth/verify-code', data)
         return response.data
-    }
+    },
 
+    getMe:async():Promise<AuthUser> => {
+        const response = await apiClient.get<AuthUser>('/auth/me')
+        return response.data
+    }
 
 }

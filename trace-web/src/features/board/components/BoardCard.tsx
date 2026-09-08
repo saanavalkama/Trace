@@ -1,13 +1,10 @@
 import { useDraggable } from "@dnd-kit/core"
 import { CSS } from "@dnd-kit/utilities"
-import { cn } from "@/lib/utils"
+import { Link, useParams } from "react-router-dom"
+import { cn, initialsFromEmail } from "@/lib/utils"
 import { Badge } from "@/components/ui/badge"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 import type { BoardIssueResponse } from "@/types/types"
-
-function initialsFromEmail(email: string) {
-    return email.slice(0, 2).toUpperCase()
-}
 
 interface BoardCardProps {
     issue: BoardIssueResponse
@@ -15,19 +12,21 @@ interface BoardCardProps {
 }
 
 export default function BoardCard({ issue, disabled }: BoardCardProps) {
+    const { workspaceId } = useParams<{ workspaceId: string }>()
     const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
         id: issue.issueId,
         disabled,
     })
 
     return (
-        <div
+        <Link
             ref={setNodeRef}
+            to={`/workspaces/${workspaceId}/issues/${issue.issueId}`}
             {...listeners}
             {...attributes}
             style={{ transform: CSS.Translate.toString(transform) }}
             className={cn(
-                "flex flex-col gap-2 rounded-lg border border-border bg-card p-3 text-left text-sm text-card-foreground shadow-sm touch-none",
+                "flex flex-col gap-2 rounded-lg border border-border bg-card p-3 text-left text-sm text-card-foreground shadow-sm transition-colors touch-none hover:bg-muted",
                 disabled ? "cursor-default opacity-70" : "cursor-grab active:cursor-grabbing",
                 isDragging && "opacity-50"
             )}
@@ -60,6 +59,6 @@ export default function BoardCard({ issue, disabled }: BoardCardProps) {
             ) : (
                 <p className="text-xs text-muted-foreground">No assignees yet</p>
             )}
-        </div>
+        </Link>
     )
 }
