@@ -49,9 +49,9 @@ export const issueController = {
     },
 
     getById: async(req:Request, res:Response) => {
-        const {issueId} = req.params as {issueId:string}
+        const {id: workspaceId, issueId} = req.params as {id:string, issueId:string}
         try{
-            const issue = await issueService.getById(issueId)
+            const issue = await issueService.getById(workspaceId, issueId)
             res.status(200).json(issue)
         } catch(err){
             if(handleIssueError(err, res)) return
@@ -76,9 +76,9 @@ export const issueController = {
         if(!result.success){
             return res.status(400).json({errors: result.error.flatten().fieldErrors})
         }
-        const {issueId} = req.params as {issueId:string}
+        const {id: workspaceId, issueId} = req.params as {id:string, issueId:string}
         try{
-            const issue = await issueService.changeStatus(issueId, result.data.to, req.userId!)
+            const issue = await issueService.changeStatus(workspaceId, issueId, result.data.to, req.userId!)
             res.status(200).json(issue)
         } catch(err){
             if(handleIssueError(err, res)) return
@@ -91,9 +91,9 @@ export const issueController = {
         if(!result.success){
             return res.status(400).json({errors: result.error.flatten().fieldErrors})
         }
-        const {issueId} = req.params as {issueId:string}
+        const {id: workspaceId, issueId} = req.params as {id:string, issueId:string}
         try{
-            const issue = await issueService.assign(issueId, result.data.userId, req.userId!)
+            const issue = await issueService.assign(workspaceId, issueId, result.data.userId, req.userId!)
             res.status(200).json(issue)
         } catch(err){
             if(handleIssueError(err, res)) return
@@ -102,9 +102,9 @@ export const issueController = {
     },
 
     unassign: async(req:Request, res:Response) => {
-        const {issueId, userId} = req.params as {issueId:string, userId:string}
+        const {id: workspaceId, issueId, userId} = req.params as {id:string, issueId:string, userId:string}
         try{
-            const issue = await issueService.unassign(issueId, userId, req.userId!)
+            const issue = await issueService.unassign(workspaceId, issueId, userId, req.userId!)
             res.status(200).json(issue)
         } catch(err){
             if(handleIssueError(err, res)) return
@@ -117,9 +117,9 @@ export const issueController = {
         if(!result.success){
             return res.status(400).json({errors: result.error.flatten().fieldErrors})
         }
-        const {issueId} = req.params as {issueId:string}
+        const {id: workspaceId, issueId} = req.params as {id:string, issueId:string}
         try{
-            const issue = await issueService.comment(issueId, result.data.body, req.userId!)
+            const issue = await issueService.comment(workspaceId, issueId, result.data.body, req.userId!)
             res.status(201).json(issue)
         } catch(err){
             if(handleIssueError(err, res)) return
@@ -132,9 +132,9 @@ export const issueController = {
         if(!result.success){
             return res.status(400).json({errors: result.error.flatten().fieldErrors})
         }
-        const {issueId} = req.params as {issueId:string}
+        const {id: workspaceId, issueId} = req.params as {id:string, issueId:string}
         try{
-            const issue = await issueService.addLabel(issueId, result.data.label, req.userId!)
+            const issue = await issueService.addLabel(workspaceId, issueId, result.data.label, req.userId!)
             res.status(200).json(issue)
         } catch(err){
             if(handleIssueError(err, res)) return
@@ -147,9 +147,9 @@ export const issueController = {
         if(!result.success){
             return res.status(400).json({errors: result.error.flatten().fieldErrors})
         }
-        const {issueId} = req.params as {issueId:string}
+        const {id: workspaceId, issueId} = req.params as {id:string, issueId:string}
         try{
-            const issue = await issueService.link(issueId, result.data.linkedIIssueId, result.data.linkType, req.userId!)
+            const issue = await issueService.link(workspaceId, issueId, result.data.linkedIIssueId, result.data.linkType, req.userId!)
             res.status(200).json(issue)
         } catch(err){
             if(handleIssueError(err, res)) return
@@ -162,9 +162,9 @@ export const issueController = {
         if(!result.success){
             return res.status(400).json({errors: result.error.flatten().fieldErrors})
         }
-        const {issueId} = req.params as {issueId:string}
+        const {id: workspaceId, issueId} = req.params as {id:string, issueId:string}
         try{
-            const issue = await issueService.close(issueId, req.userId!, result.data.reason)
+            const issue = await issueService.close(workspaceId, issueId, req.userId!, result.data.reason)
             res.status(200).json(issue)
         } catch(err){
             if(handleIssueError(err, res)) return
@@ -173,9 +173,9 @@ export const issueController = {
     },
 
     reopen: async(req:Request, res:Response) => {
-        const {issueId} = req.params as {issueId:string}
+        const {id: workspaceId, issueId} = req.params as {id:string, issueId:string}
         try{
-            const issue = await issueService.reopen(issueId, req.userId!)
+            const issue = await issueService.reopen(workspaceId, issueId, req.userId!)
             res.status(200).json(issue)
         } catch(err){
             if(handleIssueError(err, res)) return
@@ -188,9 +188,9 @@ export const issueController = {
         if(!result.success){
             return res.status(400).json({errors: result.error.flatten().fieldErrors})
         }
-        const {issueId} = req.params as {issueId:string}
+        const {id: workspaceId, issueId} = req.params as {id:string, issueId:string}
         try{
-            const issue = await issueService.moveToSprint(issueId, result.data.sprintId, req.userId!)
+            const issue = await issueService.moveToSprint(workspaceId, issueId, result.data.sprintId, req.userId!)
             res.status(200).json(issue)
         } catch(err){
             if(handleIssueError(err, res)) return

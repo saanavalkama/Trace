@@ -12,25 +12,27 @@ import {
 import { IssueCreatedPayload, IssueEvent, IssueStatus, LinkedPayload, StoredEvent } from '../features/issues/issue-events'
 import { sprintRepository } from '../repositories/sprint.repository'
 import { ConflictError, NotFoundError } from '../errors/errors'
-import { projectIssueEvent } from '../features/issues/issue-projector'
 import { issueQueries } from '../features/issues/issue-queries'
 import { IssueSummaryDto } from '../types/types'
 import {prisma} from '../db/prisma'
 import app from '../app'
 
-async function loadState(issueId: string): Promise<IssueState> {
+async function loadState(workspaceId: string, issueId: string): Promise<IssueState> {
     const snapshot = await snapshotStore.getLatest(issueId)
     const events = await eventStore.getEvents(issueId, snapshot?.version ?? 0)
-    return hydrate(issueId, events as StoredEvent[], snapshot)
+    const state = hydrate(issueId, events as StoredEvent[], snapshot)
+    if(state.exists && state.workspaceId !== workspaceId) throw new NotFoundError('Issue not found')
+    return state
 }
 
-async function appendAndProject(issueId:string, expectedVersion:number, event:IssueEvent, newState:IssueState){
-    const stored = await eventStore.append(issueId, expectedVersion, event)
-    try{
-        await projectIssueEvent(prisma, stored as unknown as StoredEvent)
-    } catch(err){
-        console.error(`Projection failed for event ${stored.id} ${event.type} on issue ${issueId}`, err)
-    }
+async function appendAndEnqueue(issueId:string, expectedVersion:number, event:IssueEvent, newState:IssueState){
+    const stored = await prisma.$transaction(async (tx) => {
+        const created = await eventStore.append(issueId, expectedVersion, event, tx)
+        await tx.outboxMessage.create({
+            data: { aggregateId: issueId, eventId: created.id }
+        })
+        return created
+    })
 
     if(shouldSnapshot(stored.version)){
         try{
@@ -57,13 +59,13 @@ export const issueService = {
 
         const event = issueCommands.create(state, data)
         const newState = applyEvent(state, event)
-        await appendAndProject(issueId, state.version, event, newState)
+        await appendAndEnqueue(issueId, state.version, event, newState)
 
         return newState
     },
 
-    getById: async(issueId: string): Promise<IssueState> => {
-        const state = await loadState(issueId)
+    getById: async(workspaceId: string, issueId: string): Promise<IssueState> => {
+        const state = await loadState(workspaceId, issueId)
         if(!state.exists) throw new NotFoundError('Issue not found')
         return state
     },
@@ -79,72 +81,72 @@ export const issueService = {
         }))
     },
 
-    changeStatus: async(issueId: string, to: IssueStatus, changedBy: string): Promise<IssueState> => {
-        const state = await loadState(issueId)
+    changeStatus: async(workspaceId: string, issueId: string, to: IssueStatus, changedBy: string): Promise<IssueState> => {
+        const state = await loadState(workspaceId, issueId)
         const event = issueCommands.changeStatus(state, to, changedBy)
         const newState = applyEvent(state, event)
-        await appendAndProject(issueId, state.version, event, newState)
+        await appendAndEnqueue(issueId, state.version, event, newState)
         return newState
     },
 
-    assign: async(issueId: string, userId: string, assignedBy: string): Promise<IssueState> => {
-        const state = await loadState(issueId)
+    assign: async(workspaceId: string, issueId: string, userId: string, assignedBy: string): Promise<IssueState> => {
+        const state = await loadState(workspaceId, issueId)
         const event = issueCommands.assign(state, userId, assignedBy)
         const newState = applyEvent(state, event)
-        await appendAndProject(issueId, state.version, event, newState)
+        await appendAndEnqueue(issueId, state.version, event, newState)
         return newState
     },
 
-    unassign: async(issueId: string, userId: string, removedBy: string): Promise<IssueState> => {
-        const state = await loadState(issueId)
+    unassign: async(workspaceId: string, issueId: string, userId: string, removedBy: string): Promise<IssueState> => {
+        const state = await loadState(workspaceId, issueId)
         const event = issueCommands.unassign(state, userId, removedBy)
         const newState = applyEvent(state, event)
-        await appendAndProject(issueId, state.version, event, newState)
+        await appendAndEnqueue(issueId, state.version, event, newState)
         return newState
     },
 
-    comment: async(issueId: string, body: string, authorId: string): Promise<IssueState> => {
-        const state = await loadState(issueId)
+    comment: async(workspaceId: string, issueId: string, body: string, authorId: string): Promise<IssueState> => {
+        const state = await loadState(workspaceId, issueId)
         const event = issueCommands.comment(state, { commentId: crypto.randomUUID(), body, authorId })
         const newState = applyEvent(state, event)
-        await appendAndProject(issueId, state.version, event, newState)
+        await appendAndEnqueue(issueId, state.version, event, newState)
         return newState
     },
 
-    addLabel: async(issueId: string, label: string, addedBy: string): Promise<IssueState> => {
-        const state = await loadState(issueId)
+    addLabel: async(workspaceId: string, issueId: string, label: string, addedBy: string): Promise<IssueState> => {
+        const state = await loadState(workspaceId, issueId)
         const event = issueCommands.addLabel(state, label, addedBy)
         const newState = applyEvent(state, event)
-        await appendAndProject(issueId, state.version, event, newState)
+        await appendAndEnqueue(issueId, state.version, event, newState)
         return newState
     },
 
-    link: async(issueId: string, linkedIIssueId: string, linkType: LinkedPayload['linkType'], linkedBy: string): Promise<IssueState> => {
-        const state = await loadState(issueId)
+    link: async(workspaceId: string, issueId: string, linkedIIssueId: string, linkType: LinkedPayload['linkType'], linkedBy: string): Promise<IssueState> => {
+        const state = await loadState(workspaceId, issueId)
         const event = issueCommands.link(state, { linkedIIssueId, linkType, linkedBy })
         const newState = applyEvent(state, event)
-        await appendAndProject(issueId, state.version, event, newState)
+        await appendAndEnqueue(issueId, state.version, event, newState)
         return newState
     },
 
-    close: async(issueId: string, closedBy: string, reason?: string): Promise<IssueState> => {
-        const state = await loadState(issueId)
+    close: async(workspaceId: string, issueId: string, closedBy: string, reason?: string): Promise<IssueState> => {
+        const state = await loadState(workspaceId, issueId)
         const event = issueCommands.close(state, { closedBy, reason })
         const newState = applyEvent(state, event)
-        await appendAndProject(issueId, state.version, event, newState)
+        await appendAndEnqueue(issueId, state.version, event, newState)
         return newState
     },
 
-    reopen: async(issueId: string, reopenedBy: string): Promise<IssueState> => {
-        const state = await loadState(issueId)
+    reopen: async(workspaceId: string, issueId: string, reopenedBy: string): Promise<IssueState> => {
+        const state = await loadState(workspaceId, issueId)
         const event = issueCommands.reopen(state, { reopenedBy })
         const newState = applyEvent(state, event)
-        await appendAndProject(issueId, state.version, event, newState)
+        await appendAndEnqueue(issueId, state.version, event, newState)
         return newState
     },
 
-    moveToSprint: async(issueId: string, sprintId: string, movedBy: string): Promise<IssueState> => {
-        const state = await loadState(issueId)
+    moveToSprint: async(workspaceId: string, issueId: string, sprintId: string, movedBy: string): Promise<IssueState> => {
+        const state = await loadState(workspaceId, issueId)
 
         const sprint = await sprintRepository.getById(sprintId)
         if(!sprint) throw new NotFoundError('Sprint not found')
@@ -152,7 +154,7 @@ export const issueService = {
 
         const event = issueCommands.moveToSprint(state, { sprintId, movedBy })
         const newState = applyEvent(state, event)
-        await appendAndProject(issueId, state.version, event, newState)
+        await appendAndEnqueue(issueId, state.version, event, newState)
         return newState
     }
 }

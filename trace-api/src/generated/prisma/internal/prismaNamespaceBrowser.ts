@@ -61,7 +61,8 @@ export const ModelName = {
   Event: 'Event',
   IssueSnapshot: 'IssueSnapshot',
   IssueBoardProjection: 'IssueBoardProjection',
-  IssueActivityProjection: 'IssueActivityProjection'
+  IssueActivityProjection: 'IssueActivityProjection',
+  OutboxMessage: 'OutboxMessage'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -214,6 +215,21 @@ export const IssueActivityProjectionScalarFieldEnum = {
 } as const
 
 export type IssueActivityProjectionScalarFieldEnum = (typeof IssueActivityProjectionScalarFieldEnum)[keyof typeof IssueActivityProjectionScalarFieldEnum]
+
+
+export const OutboxMessageScalarFieldEnum = {
+  id: 'id',
+  aggregateId: 'aggregateId',
+  eventId: 'eventId',
+  status: 'status',
+  attempts: 'attempts',
+  lastError: 'lastError',
+  availableAt: 'availableAt',
+  createdAt: 'createdAt',
+  processedAt: 'processedAt'
+} as const
+
+export type OutboxMessageScalarFieldEnum = (typeof OutboxMessageScalarFieldEnum)[keyof typeof OutboxMessageScalarFieldEnum]
 
 
 export const SortOrder = {

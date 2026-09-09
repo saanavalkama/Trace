@@ -35,3 +35,13 @@ export const InviteStatus = {
 } as const
 
 export type InviteStatus = (typeof InviteStatus)[keyof typeof InviteStatus]
+
+
+export const OutboxStatus = {
+  pending: 'pending',
+  processing: 'processing',
+  done: 'done',
+  failed: 'failed'
+} as const
+
+export type OutboxStatus = (typeof OutboxStatus)[keyof typeof OutboxStatus]
