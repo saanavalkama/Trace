@@ -31,6 +31,13 @@ enum InviteStatus{
   declined
 }
 
+enum OutboxStatus{
+  pending
+  processing
+  done
+  failed
+}
+
 model User{
   id String @id @default(uuid())
   email String @unique
@@ -172,4 +179,19 @@ model IssueActivityProjection{
 
   @@index([issueId, createdAt])
   @@map("issue_activity_projection")
+}
+
+model OutboxMessage{
+  id String @id @default(uuid())
+  aggregateId String @map("aggregate_id")
+  eventId String @map("event_id")
+  status OutboxStatus @default(pending)
+  attempts Int @default(0)
+  lastError String? @map("last_error")
+  availableAt DateTime @default(now()) @map("available_at")
+  createdAt DateTime @default(now()) @map("created_at")
+  processedAt DateTime? @map("processed_at")
+
+  @@index([status, availableAt])
+  @@map("outbox_messages")
 }

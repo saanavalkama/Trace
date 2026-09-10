@@ -7,15 +7,17 @@ export class EventStore{
     constructor(private prisma : PrismaClient){}
 
     async append(
-        aggregateId:string, 
+        aggregateId:string,
         expectedVersion: number,
-        event: IssueEvent
+        event: IssueEvent,
+        tx?: Prisma.TransactionClient
     ){
-        
-        const nextVersion = expectedVersion + 1 
+
+        const nextVersion = expectedVersion + 1
+        const client = tx ?? this.prisma
 
         try{
-            return await this.prisma.event.create({
+            return await client.event.create({
                 data: {
                     aggregateId, 
                     version: nextVersion,

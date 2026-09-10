@@ -72,3 +72,8 @@ export type IssueBoardProjection = Prisma.IssueBoardProjectionModel
  * 
  */
 export type IssueActivityProjection = Prisma.IssueActivityProjectionModel
+/**
+ * Model OutboxMessage
+ * 
+ */
+export type OutboxMessage = Prisma.OutboxMessageModel

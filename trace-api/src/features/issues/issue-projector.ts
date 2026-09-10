@@ -1,4 +1,4 @@
-import { Prisma, PrismaClient } from "../../generated/prisma/client";
+import { Prisma } from "../../generated/prisma/client";
 import { IssueEvent, StoredEvent } from "./issue-events";
 
 function actorOf(event: IssueEvent): string {
@@ -8,7 +8,7 @@ function actorOf(event: IssueEvent): string {
 
 }
 
-export async function projectIssueEvent(prisma: PrismaClient, stored: StoredEvent){
+export async function projectIssueEvent(prisma: Prisma.TransactionClient, stored: StoredEvent){
     const event = {type:stored.type, payload:stored.payload} as IssueEvent
     const issueId = stored.aggregateId
 
