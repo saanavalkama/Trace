@@ -18,6 +18,8 @@ const HEAD_SCAN_BATCH_SIZE = 50
 // keeps moving. A blocked issue shows up as a 'failed' row and needs manual
 // intervention (fix the root cause, flip it back to 'pending') to resume.
 async function findNextEligibleMessage() {
+    //making sure failed events from issues won't keep projecting
+    //never events
     const blockedByFailure = await prisma.outboxMessage.findMany({
         where: { status: "failed" },
         select: { aggregateId: true },
@@ -34,6 +36,11 @@ async function findNextEligibleMessage() {
         take: HEAD_SCAN_BATCH_SIZE
     })
 
+    //within one scan, for each aggregate, 
+    // only its oldest unresolved message is ever 
+    // eligible to be returned — never a newer one, 
+    // even if the newer one is individually ready 
+    // and the older one isn't.
     const seenAggregateIds = new Set<string>()
     for (const candidate of candidates) {
         if (seenAggregateIds.has(candidate.aggregateId)) continue
@@ -50,8 +57,7 @@ async function relayTick(): Promise<boolean> {
 
     // Reusing availableAt as "not actionable before this time" for two purposes:
     // retry backoff after a failure, and a stall timeout so a message stuck in
-    // 'processing' (e.g. the process crashed mid-tick) becomes reclaimable again
-    // instead of blocking that issue's queue forever.
+    // 'processing' (e.s) wont block a new try
     const claimed = await prisma.outboxMessage.updateMany({
         where: { id: next.id, status: next.status, availableAt: next.availableAt },
         data: { status: "processing", availableAt: new Date(Date.now() + STALL_TIMEOUT_MS) }
@@ -59,11 +65,16 @@ async function relayTick(): Promise<boolean> {
     if (claimed.count === 0) return true
 
     try {
-        const event = await prisma.event.findUniqueOrThrow({ where: { id: next.eventId } })
-        await projectIssueEvent(prisma, event as unknown as StoredEvent)
-        await prisma.outboxMessage.update({
-            where: { id: next.id },
-            data: { status: "done", processedAt: new Date() }
+        // Project + mark done in one transaction: if the process died between the two,
+        // the stall-timeout reclaim would otherwise replay the projection a second time
+        // on top of itself, and array pushes (assigneeIds, labels) aren't idempotent.
+        await prisma.$transaction(async (tx) => {
+            const event = await tx.event.findUniqueOrThrow({ where: { id: next.eventId } })
+            await projectIssueEvent(tx, event as unknown as StoredEvent)
+            await tx.outboxMessage.update({
+                where: { id: next.id },
+                data: { status: "done", processedAt: new Date() }
+            })
         })
     } catch (err) {
         const attempts = next.attempts + 1
@@ -86,10 +97,43 @@ async function relayTick(): Promise<boolean> {
     return true
 }
 
-export function startOutboxRelay(intervalMs = 500) {
-    const timer = setInterval(() => {
-        relayTick().catch((err) => console.error("Outbox relay tick crashed", err))
-    }, intervalMs)
+const DEFAULT_LANE_COUNT = 10
+const IDLE_SLEEP_MS = 200
 
-    return () => clearInterval(timer)
+function sleep(ms: number) {
+    return new Promise((resolve) => setTimeout(resolve, ms))
+}
+
+// Multiple lanes running the same claim-and-process loop concurrently is safe without
+// any extra coordination: the optimistic claim in relayTick means at most one lane ever
+// wins a given message, and the per-issue-head restriction means different lanes
+// naturally gravitate to different issues' heads (a claimed head's availableAt is
+// pushed into the future immediately, so a concurrent scan skips straight past it to
+// the next issue). This turns "N issues with pending work" into N-way real parallelism.
+// It does NOT help when most of the backlog belongs to one issue — that issue's events
+// are still required to apply strictly in order, one at a time, no matter how many
+// lanes are running.
+async function relayLane(isStopped: () => boolean) {
+    while (!isStopped()) {
+        let didWork = false
+        try {
+            didWork = await relayTick()
+        } catch (err) {
+            console.error("Outbox relay lane crashed", err)
+        }
+        if (!didWork) await sleep(IDLE_SLEEP_MS)
+    }
+}
+
+export function startOutboxRelay(laneCount = DEFAULT_LANE_COUNT) {
+    let stopped = false
+    const isStopped = () => stopped
+
+    for (let i = 0; i < laneCount; i++) {
+        relayLane(isStopped)
+    }
+
+    return () => {
+        stopped = true
+    }
 }
