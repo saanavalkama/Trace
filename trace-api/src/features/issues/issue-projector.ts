@@ -102,6 +102,11 @@ export async function projectIssueEvent(prisma: Prisma.TransactionClient, stored
            createdAt: stored.createdAt
         }
     })
+
+    // returned so callers (the outbox relay) can publish a realtime board-update
+    // notification without re-deriving workspaceId/sprintId from each event type's
+    // differently-shaped payload
+    return prisma.issueBoardProjection.findUniqueOrThrow({where:{issueId}})
 }
 
 

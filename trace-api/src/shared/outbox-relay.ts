@@ -1,6 +1,7 @@
 import { prisma } from "../db/prisma"
 import { projectIssueEvent } from "../features/issues/issue-projector"
 import { StoredEvent } from "../features/issues/issue-events"
+import { publishBoardUpdate } from "./board-updates-stream"
 
 const MAX_ATTEMPTS = 5
 const BASE_BACKOFF_MS = 1000
@@ -68,14 +69,28 @@ async function relayTick(): Promise<boolean> {
         // Project + mark done in one transaction: if the process died between the two,
         // the stall-timeout reclaim would otherwise replay the projection a second time
         // on top of itself, and array pushes (assigneeIds, labels) aren't idempotent.
-        await prisma.$transaction(async (tx) => {
+        const board = await prisma.$transaction(async (tx) => {
             const event = await tx.event.findUniqueOrThrow({ where: { id: next.eventId } })
-            await projectIssueEvent(tx, event as unknown as StoredEvent)
+            const boardRow = await projectIssueEvent(tx, event as unknown as StoredEvent)
             await tx.outboxMessage.update({
                 where: { id: next.id },
                 data: { status: "done", processedAt: new Date() }
             })
+            return boardRow
         })
+
+        // Best-effort: a missed realtime notification doesn't lose data, the client just
+        // falls back to its normal refetch (staleTime expiry, navigation, reconnect). The
+        // projection above is already durably correct regardless of whether this succeeds.
+        try {
+            await publishBoardUpdate({
+                workspaceId: board.workspaceId,
+                sprintId: board.sprintId ?? "",
+                issueId: board.issueId
+            })
+        } catch (err) {
+            console.error(`Failed to publish board update for issue ${board.issueId}`, err)
+        }
     } catch (err) {
         const attempts = next.attempts + 1
         const failed = attempts >= MAX_ATTEMPTS

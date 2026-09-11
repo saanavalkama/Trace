@@ -14,4 +14,6 @@ export const env = {
     jwtSecret: required("JWT_SECRET"),
     jwtExpiresIn: process.env.JWT_EXPIRES_IN ?? "15m",
     frontendUrl: process.env.FRONTEND_URL,
+    redisHost: process.env.REDIS_HOST ?? "localhost",
+    redisPort: Number(process.env.REDIS_PORT ?? 6379),
 }

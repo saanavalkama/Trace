@@ -32,8 +32,16 @@ export function useMoveIssue(workspaceId: string, sprintId: string) {
             if (context?.previous) queryClient.setQueryData(queryKey, context.previous)
         },
 
+        // Deliberately not invalidating the board query here. The HTTP request only
+        // confirms the event was appended — the outbox relay hasn't necessarily
+        // projected it yet, so an immediate refetch would race ahead of it, briefly
+        // overwrite the optimistic update with stale data (visible snap-back), and then
+        // snap forward again a moment later once the WS-driven invalidate (which only
+        // ever fires after the projection is confirmed committed) catches up. The
+        // optimistic update above is the UI until that WS message arrives; if it never
+        // does (dropped connection etc.), staleTime expiry / refetchOnWindowFocus still
+        // reconciles it eventually.
         onSettled: (_data, _error, variables) => {
-            queryClient.invalidateQueries({ queryKey })
             queryClient.invalidateQueries({ queryKey: ['issueActivity', workspaceId, variables.issueId] })
         }
     })

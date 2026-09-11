@@ -13,6 +13,7 @@ import {
 } from "@dnd-kit/core"
 import { useBoard } from "../hooks/boardQueryHooks"
 import { useMoveIssue } from "../hooks/boardMutationHooks"
+import { useBoardRealtimeUpdates } from "../hooks/useBoardRealtimeUpdates"
 import BoardColumn from "./BoardColumn"
 import BoardCard from "./BoardCard"
 import { Button } from "@/components/ui/button"
@@ -31,6 +32,7 @@ export default function BoardView() {
     const { workspaceId, sprintId } = useParams<{ workspaceId: string; sprintId: string }>()
     const { data: issues, isPending, isError } = useBoard(workspaceId!, sprintId!)
     const moveIssue = useMoveIssue(workspaceId!, sprintId!)
+    useBoardRealtimeUpdates(workspaceId!, sprintId!)
     const [activeIssue, setActiveIssue] = useState<BoardIssueResponse | null>(null)
 
     const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 4 } }))
