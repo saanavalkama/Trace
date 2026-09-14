@@ -9,11 +9,12 @@ import {
     shouldSnapshot,
     IssueState
 } from '../features/issues/issue-aggregate'
-import { IssueCreatedPayload, IssueEvent, IssueStatus, LinkedPayload, StoredEvent } from '../features/issues/issue-events'
+import { CommentedPayload, IssueCreatedPayload, IssueEvent, IssueStatus, LinkedPayload, StoredEvent } from '../features/issues/issue-events'
 import { sprintRepository } from '../repositories/sprint.repository'
+import { userRepository } from '../repositories/user.repository'
 import { ConflictError, NotFoundError } from '../errors/errors'
 import { issueQueries } from '../features/issues/issue-queries'
-import { IssueLabelDto, IssueSummaryDto } from '../types/types'
+import { IssueCommentDto, IssueLabelDto, IssueSummaryDto } from '../types/types'
 import {prisma} from '../db/prisma'
 import app from '../app'
 
@@ -79,6 +80,33 @@ export const issueService = {
         const state = await loadState(workspaceId, issueId)
         if(!state.exists) throw new NotFoundError('Issue not found')
         return state.labels.map((label) => ({ id: label, label }))
+    },
+
+    // Also sourced straight from the event log rather than the projection, but unlike
+    // getLabels the reduced IssueState doesn't carry comment bodies (only commentIds) —
+    // the reducer never folds payload details into state for this event type. So this
+    // reads the raw events directly (the same source loadState hydrates from) and
+    // filters for Commented ones instead of going through the reducer at all.
+    getComments: async(workspaceId: string, issueId: string): Promise<IssueCommentDto[]> => {
+        const state = await loadState(workspaceId, issueId)
+        if(!state.exists) throw new NotFoundError('Issue not found')
+
+        const events = await eventStore.getEvents(issueId)
+        const commentEvents = events.filter((event) => event.type === 'Commented')
+        const actorsById = await userRepository.resolveActorsById(
+            commentEvents.map((event) => (event.payload as unknown as CommentedPayload).authorId)
+        )
+
+        return commentEvents.map((event) => {
+            const payload = event.payload as unknown as CommentedPayload
+            return {
+                id: payload.commentId,
+                issueId,
+                body: payload.body,
+                actor: actorsById.get(payload.authorId) ?? null,
+                createdAt: event.createdAt
+            }
+        })
     },
 
     search: async(workspaceId: string, query?: string): Promise<IssueSummaryDto[]> => {

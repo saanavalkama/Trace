@@ -51,11 +51,4 @@ export const issueQueries = {
         })
     },
 
-    getComments: async(issueId:string) => {
-        return prisma.issueActivityProjection.findMany({
-            where: {issueId, eventType:'Commented'},
-            orderBy:{createdAt:'asc'}        
-        })
-    },
-
 }

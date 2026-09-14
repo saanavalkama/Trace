@@ -66,10 +66,18 @@ export default function AddLinkSheet({ workspaceId, issueId }: AddLinkSheetProps
 
     function handleSubmit(e: FormEvent) {
         e.preventDefault()
-        if (!linkedIssueId) return
+        const selected = options.find((issue) => issue.issueId === linkedIssueId)
+        if (!selected) return
 
         mutate(
-            { workspaceId, issueId, linkedIIssueId: linkedIssueId, linkType },
+            {
+                workspaceId,
+                issueId,
+                linkedIIssueId: selected.issueId,
+                linkType,
+                linkedIssueName: selected.title,
+                linkedIssueStatus: selected.status,
+            },
             { onSuccess: () => handleOpenChange(false) }
         )
     }

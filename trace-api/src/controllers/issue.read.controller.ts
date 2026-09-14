@@ -34,7 +34,7 @@ export const issueReadController = {
     getComments: async(req:Request, res:Response) => {
         const {id: workspaceId, issueId} = req.params as {id:string, issueId:string}
         try{
-            const comments = await issueReadService.getComments(workspaceId, issueId)
+            const comments = await issueService.getComments(workspaceId, issueId)
             res.status(200).json(comments)
         } catch(err){
             if(err instanceof NotFoundError){
