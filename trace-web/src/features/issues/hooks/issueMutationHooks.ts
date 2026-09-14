@@ -1,4 +1,4 @@
-import type { AddCommentData, AddLabelData, AssignData, LinkIssueData, MoveToSprintData, ReopenData, UnassignData } from "@/types/types"
+import type { AddCommentData, AddLabelData, AssignData, Label, LinkIssueData, MoveToSprintData, ReopenData, UnassignData } from "@/types/types"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { issueService } from "../api/issueService"
 
@@ -16,7 +16,31 @@ export const useAddLabel = () => {
     const qc = useQueryClient()
     return useMutation({
         mutationFn: (data:AddLabelData) => issueService.addLabel(data.workspaceId, data.issueId, data.label),
-         onSuccess: (_data, { workspaceId, issueId, sprintId }) => {
+
+        // id = label text, matching the backend's synthesis scheme (getLabels now reads
+        // from state, where labels are just deduped strings) — so this optimistic entry
+        // and the eventually-refetched real one share the same id, no key churn.
+        onMutate: async ({ workspaceId, issueId, label }) => {
+            const queryKey = ['labels', workspaceId, issueId]
+            await qc.cancelQueries({ queryKey })
+            const previous = qc.getQueryData<Label[]>(queryKey)
+
+            qc.setQueryData<Label[]>(queryKey, (labels) =>
+                labels?.some((existing) => existing.label === label)
+                    ? labels
+                    : [...(labels ?? []), { id: label, label }]
+            )
+
+            return { previous }
+        },
+
+        onError: (_err, { workspaceId, issueId }, context) => {
+            if (context?.previous) qc.setQueryData(['labels', workspaceId, issueId], context.previous)
+        },
+
+        // Safe to invalidate immediately now: getLabels is state-based, not projection-
+        // based, so there's no outbox lag left to race against.
+        onSettled: (_data, _error, { workspaceId, issueId, sprintId }) => {
             qc.invalidateQueries({ queryKey: ['labels', workspaceId, issueId] })
             if (sprintId) qc.invalidateQueries({ queryKey: ['board', workspaceId, sprintId] })
             qc.invalidateQueries({queryKey:['issueActivity', workspaceId, issueId]})

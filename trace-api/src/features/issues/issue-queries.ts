@@ -58,11 +58,4 @@ export const issueQueries = {
         })
     },
 
-    getLabels: async(issueId:string) => {
-        return prisma.issueActivityProjection.findMany({
-            where:{issueId, eventType:'LabelAdded'},
-            orderBy: {createdAt:'asc'}
-        })
-    },
-
 }

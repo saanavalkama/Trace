@@ -13,7 +13,7 @@ import { IssueCreatedPayload, IssueEvent, IssueStatus, LinkedPayload, StoredEven
 import { sprintRepository } from '../repositories/sprint.repository'
 import { ConflictError, NotFoundError } from '../errors/errors'
 import { issueQueries } from '../features/issues/issue-queries'
-import { IssueSummaryDto } from '../types/types'
+import { IssueLabelDto, IssueSummaryDto } from '../types/types'
 import {prisma} from '../db/prisma'
 import app from '../app'
 
@@ -68,6 +68,17 @@ export const issueService = {
         const state = await loadState(workspaceId, issueId)
         if(!state.exists) throw new NotFoundError('Issue not found')
         return state
+    },
+
+    // Sourced from state rather than the (outbox-fed) projection: reads happen right
+    // after loadState hydrates the event log, so this is always immediately consistent
+    // with the write that just happened — no projection lag to race against. `id` is
+    // synthesized as the label text itself, which is safe because the write model
+    // already dedupes labels per issue (see issueCommands.addLabel).
+    getLabels: async(workspaceId: string, issueId: string): Promise<IssueLabelDto[]> => {
+        const state = await loadState(workspaceId, issueId)
+        if(!state.exists) throw new NotFoundError('Issue not found')
+        return state.labels.map((label) => ({ id: label, label }))
     },
 
     search: async(workspaceId: string, query?: string): Promise<IssueSummaryDto[]> => {

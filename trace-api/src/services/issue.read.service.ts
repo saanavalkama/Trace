@@ -4,8 +4,8 @@ import { sprintRepository } from '../repositories/sprint.repository'
 import { workspaceRepository } from '../repositories/workspace.repository'
 import { userRepository } from '../repositories/user.repository'
 import { NotFoundError } from '../errors/errors'
-import { CommentedPayload, LabelAddedPayload, LinkedPayload } from '../features/issues/issue-events'
-import { ActorDto, IssueActivityDto, IssueBoardCardDto, IssueCommentDto, IssueLabelDto, IssueLinkDto, MemberSummaryDto } from '../types/types'
+import { CommentedPayload, LinkedPayload } from '../features/issues/issue-events'
+import { ActorDto, IssueActivityDto, IssueBoardCardDto, IssueCommentDto, IssueLinkDto, MemberSummaryDto } from '../types/types'
 
 async function assertIssueInWorkspace(workspaceId: string, issueId: string){
     const issue = await prisma.issueBoardProjection.findUnique({where:{issueId}})
@@ -81,16 +81,6 @@ export const issueReadService = {
             body: (entry.payload as unknown as CommentedPayload).body,
             actor: actorsById.get(entry.actorId) ?? null,
             createdAt: entry.createdAt
-        }))
-    },
-
-    getLabels: async(workspaceId: string, issueId: string): Promise<IssueLabelDto[]> => {
-        await assertIssueInWorkspace(workspaceId, issueId)
-        const labels = await issueQueries.getLabels(issueId)
-
-        return labels.map((entry) => ({
-            id: entry.id,
-            label: (entry.payload as unknown as LabelAddedPayload).label
         }))
     },
 

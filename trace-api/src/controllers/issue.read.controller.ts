@@ -1,5 +1,6 @@
 import { Request, Response } from "express"
 import { issueReadService } from "../services/issue.read.service"
+import { issueService } from "../services/issue.service"
 import { NotFoundError } from "../errors/errors"
 
 export const issueReadController = {
@@ -46,7 +47,7 @@ export const issueReadController = {
     getLabels: async(req:Request, res:Response) => {
         const {id: workspaceId, issueId} = req.params as {id:string, issueId:string}
         try{
-            const labels = await issueReadService.getLabels(workspaceId, issueId)
+            const labels = await issueService.getLabels(workspaceId, issueId)
             res.status(200).json(labels)
         } catch(err){
             if(err instanceof NotFoundError){

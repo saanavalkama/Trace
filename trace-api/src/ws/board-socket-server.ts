@@ -25,11 +25,13 @@ function removeSubscription(socket: WebSocket) {
     if (!key) return
     const sockets = subscribersByKey.get(key)
     sockets?.delete(socket)
+    //remove empty sets so there's not memory leaks
     if (sockets && sockets.size === 0) subscribersByKey.delete(key)
     subscriptionKeyBySocket.delete(socket)
 }
 
 function addSubscription(socket: WebSocket, workspaceId: string, sprintId: string) {
+    //one sokcet can only ever be subscribed to exactly one room
     removeSubscription(socket)
     const key = subscriptionKey(workspaceId, sprintId)
     if (!subscribersByKey.has(key)) subscribersByKey.set(key, new Set())
