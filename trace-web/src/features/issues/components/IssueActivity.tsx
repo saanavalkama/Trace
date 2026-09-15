@@ -1,5 +1,6 @@
 import { formatDistanceToNow } from "date-fns"
 import { useGetActivity } from "../hooks/issueQueryHooks"
+import { useIssueActivityRealtimeUpdates } from "../hooks/useIssueActivityRealtimeUpdates"
 import { actorLabel, describeActivity } from "../utils"
 import { Skeleton } from "@/components/ui/skeleton"
 
@@ -10,6 +11,7 @@ interface IssueActivityProps {
 
 export default function IssueActivity({ workspaceId, issueId }: IssueActivityProps) {
     const { data: activity, isPending, isError } = useGetActivity(workspaceId, issueId)
+    useIssueActivityRealtimeUpdates(workspaceId, issueId)
 
     return (
         <div className="flex min-h-0 flex-1 flex-col gap-3">

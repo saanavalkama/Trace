@@ -3,6 +3,7 @@ import app from "./app";
 import {env} from "./config/env";
 import { startOutboxRelay } from "./shared/outbox-relay";
 import { startBoardSocketServer } from "./ws/board-socket-server";
+import { startIssueActivitySocketServer } from "./ws/issue-activity-socket-server";
 
 
 const server = app.listen(env.port, ()=>{
@@ -11,3 +12,4 @@ const server = app.listen(env.port, ()=>{
 
 startOutboxRelay()
 startBoardSocketServer(server)
+startIssueActivitySocketServer(server)

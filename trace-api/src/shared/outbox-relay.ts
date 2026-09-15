@@ -2,6 +2,7 @@ import { prisma } from "../db/prisma"
 import { projectIssueEvent } from "../features/issues/issue-projector"
 import { StoredEvent } from "../features/issues/issue-events"
 import { publishBoardUpdate } from "./board-updates-stream"
+import { publishIssueActivityUpdate } from "./issue-activity-stream"
 
 const MAX_ATTEMPTS = 5
 const BASE_BACKOFF_MS = 1000
@@ -90,6 +91,15 @@ async function relayTick(): Promise<boolean> {
             })
         } catch (err) {
             console.error(`Failed to publish board update for issue ${board.issueId}`, err)
+        }
+
+        try {
+            await publishIssueActivityUpdate({
+                workspaceId: board.workspaceId,
+                issueId: board.issueId
+            })
+        } catch (err) {
+            console.error(`Failed to publish issue-activity update for issue ${board.issueId}`, err)
         }
     } catch (err) {
         const attempts = next.attempts + 1

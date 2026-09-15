@@ -85,13 +85,18 @@ export const issueService = {
     // Also sourced straight from the event log rather than the projection, but unlike
     // getLabels the reduced IssueState doesn't carry comment bodies (only commentIds) —
     // the reducer never folds payload details into state for this event type. So this
-    // reads the raw events directly (the same source loadState hydrates from) and
-    // filters for Commented ones instead of going through the reducer at all.
+    // skips loadState entirely (it would fetch the snapshot + tail, then this would
+    // redundantly re-fetch the full history on top of that) and reads the raw events
+    // once. IssueCreated is always version 1 — issueCommands.create refuses to run if
+    // the issue already exists, so nothing can precede it — which gives existence and
+    // workspace checks for free from events[0] instead of a second query.
     getComments: async(workspaceId: string, issueId: string): Promise<IssueCommentDto[]> => {
-        const state = await loadState(workspaceId, issueId)
-        if(!state.exists) throw new NotFoundError('Issue not found')
-
         const events = await eventStore.getEvents(issueId)
+        if(events.length === 0) throw new NotFoundError('Issue not found')
+
+        const created = events[0].payload as unknown as IssueCreatedPayload
+        if(created.workspaceId !== workspaceId) throw new NotFoundError('Issue not found')
+
         const commentEvents = events.filter((event) => event.type === 'Commented')
         const actorsById = await userRepository.resolveActorsById(
             commentEvents.map((event) => (event.payload as unknown as CommentedPayload).authorId)
