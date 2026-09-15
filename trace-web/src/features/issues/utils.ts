@@ -4,6 +4,18 @@ export function actorLabel(actor: ActorSummary | null) {
     return actor?.email ?? "Unknown"
 }
 
+export const ACTIVITY_TYPE_OPTIONS: { value: string; label: string }[] = [
+    { value: "IssueCreated", label: "Created" },
+    { value: "StatusChanged", label: "Status changed" },
+    { value: "Assigned", label: "Assigned" },
+    { value: "Unassigned", label: "Unassigned" },
+    { value: "LabelAdded", label: "Label added" },
+    { value: "Linked", label: "Linked" },
+    { value: "Closed", label: "Closed" },
+    { value: "Reopened", label: "Reopened" },
+    { value: "MovedToSprint", label: "Moved to sprint" },
+]
+
 export function describeActivity(entry: IssueActivityProjection): string {
     const p = entry.payload
     switch (entry.eventType) {
