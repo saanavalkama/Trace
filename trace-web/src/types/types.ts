@@ -191,6 +191,11 @@ export interface LinkIssueData{
     issueId:string
     linkedIIssueId:string
     linkType: 'blocks' | 'blocked_by' | 'relates_to' | 'duplicates'
+    // Already known client-side from the search results the user picked this issue
+    // from — carried through so the mutation can build a fully accurate optimistic
+    // entry without waiting on the (projection-backed) links read to catch up.
+    linkedIssueName:string
+    linkedIssueStatus:string
 }
 
 export interface IssueSummary{

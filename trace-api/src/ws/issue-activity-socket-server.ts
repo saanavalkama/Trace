@@ -5,20 +5,20 @@ import crypto from "crypto"
 import jwt from "jsonwebtoken"
 import { env } from "../config/env"
 import { workspaceRepository } from "../repositories/workspace.repository"
-import { consumeBoardUpdates } from "../shared/board-updates-stream"
+import { consumeIssueActivityUpdates } from "../shared/issue-activity-stream"
 
 interface SubscribeMessage {
     type: "subscribe"
     accessToken: string
     workspaceId: string
-    sprintId: string
+    issueId: string
 }
 
 const subscribersByKey = new Map<string, Set<WebSocket>>()
 const subscriptionKeyBySocket = new WeakMap<WebSocket, string>()
 
-function subscriptionKey(workspaceId: string, sprintId: string) {
-    return `${workspaceId}:${sprintId}`
+function subscriptionKey(workspaceId: string, issueId: string) {
+    return `${workspaceId}:${issueId}`
 }
 
 function removeSubscription(socket: WebSocket) {
@@ -31,10 +31,10 @@ function removeSubscription(socket: WebSocket) {
     subscriptionKeyBySocket.delete(socket)
 }
 
-function addSubscription(socket: WebSocket, workspaceId: string, sprintId: string) {
-    //one sokcet can only ever be subscribed to exactly one room
+function addSubscription(socket: WebSocket, workspaceId: string, issueId: string) {
+    //one socket can only ever be subscribed to exactly one issue
     removeSubscription(socket)
-    const key = subscriptionKey(workspaceId, sprintId)
+    const key = subscriptionKey(workspaceId, issueId)
     if (!subscribersByKey.has(key)) subscribersByKey.set(key, new Set())
     subscribersByKey.get(key)!.add(socket)
     subscriptionKeyBySocket.set(socket, key)
@@ -51,11 +51,11 @@ function isSubscribeMessage(value: unknown): value is SubscribeMessage {
         (value as { type?: unknown }).type === "subscribe" &&
         typeof (value as { accessToken?: unknown }).accessToken === "string" &&
         typeof (value as { workspaceId?: unknown }).workspaceId === "string" &&
-        typeof (value as { sprintId?: unknown }).sprintId === "string"
+        typeof (value as { issueId?: unknown }).issueId === "string"
     )
 }
 
-// Same authorization boundary the REST board endpoint enforces (requireAuth +
+// Same authorization boundary the REST activity endpoint enforces (requireAuth +
 // workspace membership) — a WS subscribe is a read, it doesn't get a free pass just
 // because it can't go through Express middleware. Browsers can't set custom headers
 // on a WS handshake, so the token travels in the first message instead of a header.
@@ -77,21 +77,17 @@ async function handleSubscribe(socket: WebSocket, message: SubscribeMessage) {
         return
     }
 
-    addSubscription(socket, message.workspaceId, message.sprintId)
-    send(socket, { type: "subscribed", workspaceId: message.workspaceId, sprintId: message.sprintId })
+    addSubscription(socket, message.workspaceId, message.issueId)
+    send(socket, { type: "subscribed", workspaceId: message.workspaceId, issueId: message.issueId })
 }
 
-const SOCKET_PATH = "/ws/board"
+const SOCKET_PATH = "/ws/issue-activity"
 
-export function startBoardSocketServer(server: HttpServer) {
-    // noServer + a manual 'upgrade' listener rather than { server, path }: ws's own
-    // { server, path } wiring calls handleUpgrade() unconditionally for every upgrade
-    // on that server and aborts (400s, destroys the socket) internally when the path
-    // doesn't match — so a second WebSocketServer sharing the same http.Server would
-    // never get a chance to see requests for its own path, since the first listener
-    // registered kills them first. Checking the path ourselves and only ever calling
-    // handleUpgrade for a match — doing nothing otherwise — lets multiple gateways
-    // coexist on one server.
+export function startIssueActivitySocketServer(server: HttpServer) {
+    // noServer + a manual 'upgrade' listener — see board-socket-server.ts for why:
+    // ws's { server, path } wiring aborts (400s, destroys the socket) internally for
+    // any upgrade whose path doesn't match, so a second WebSocketServer sharing the
+    // same http.Server never gets a chance if it's registered after one that does that.
     const wss = new WebSocketServer({ noServer: true })
 
     function onUpgrade(request: IncomingMessage, socket: Duplex, head: Buffer) {
@@ -119,7 +115,7 @@ export function startBoardSocketServer(server: HttpServer) {
             }
 
             handleSubscribe(socket, message).catch((err) => {
-                console.error("Board socket subscribe failed", err)
+                console.error("Issue activity socket subscribe failed", err)
             })
         })
 
@@ -128,23 +124,22 @@ export function startBoardSocketServer(server: HttpServer) {
 
     let stopped = false
     const consumerName = crypto.randomUUID()
-    consumeBoardUpdates(
+    consumeIssueActivityUpdates(
         consumerName,
         (message) => {
-            const key = subscriptionKey(message.workspaceId, message.sprintId)
+            const key = subscriptionKey(message.workspaceId, message.issueId)
             const sockets = subscribersByKey.get(key)
             if (!sockets) return
             for (const socket of sockets) {
                 send(socket, {
                     type: "invalidate",
                     workspaceId: message.workspaceId,
-                    sprintId: message.sprintId,
                     issueId: message.issueId
                 })
             }
         },
         () => stopped
-    ).catch((err) => console.error("Board updates consumer crashed", err))
+    ).catch((err) => console.error("Issue activity updates consumer crashed", err))
 
     return () => {
         stopped = true

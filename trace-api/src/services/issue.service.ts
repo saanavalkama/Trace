@@ -9,11 +9,12 @@ import {
     shouldSnapshot,
     IssueState
 } from '../features/issues/issue-aggregate'
-import { IssueCreatedPayload, IssueEvent, IssueStatus, LinkedPayload, StoredEvent } from '../features/issues/issue-events'
+import { CommentedPayload, IssueCreatedPayload, IssueEvent, IssueStatus, LinkedPayload, StoredEvent } from '../features/issues/issue-events'
 import { sprintRepository } from '../repositories/sprint.repository'
+import { userRepository } from '../repositories/user.repository'
 import { ConflictError, NotFoundError } from '../errors/errors'
 import { issueQueries } from '../features/issues/issue-queries'
-import { IssueSummaryDto } from '../types/types'
+import { IssueCommentDto, IssueLabelDto, IssueSummaryDto } from '../types/types'
 import {prisma} from '../db/prisma'
 import app from '../app'
 
@@ -68,6 +69,49 @@ export const issueService = {
         const state = await loadState(workspaceId, issueId)
         if(!state.exists) throw new NotFoundError('Issue not found')
         return state
+    },
+
+    // Sourced from state rather than the (outbox-fed) projection: reads happen right
+    // after loadState hydrates the event log, so this is always immediately consistent
+    // with the write that just happened — no projection lag to race against. `id` is
+    // synthesized as the label text itself, which is safe because the write model
+    // already dedupes labels per issue (see issueCommands.addLabel).
+    getLabels: async(workspaceId: string, issueId: string): Promise<IssueLabelDto[]> => {
+        const state = await loadState(workspaceId, issueId)
+        if(!state.exists) throw new NotFoundError('Issue not found')
+        return state.labels.map((label) => ({ id: label, label }))
+    },
+
+    // Also sourced straight from the event log rather than the projection, but unlike
+    // getLabels the reduced IssueState doesn't carry comment bodies (only commentIds) —
+    // the reducer never folds payload details into state for this event type. So this
+    // skips loadState entirely (it would fetch the snapshot + tail, then this would
+    // redundantly re-fetch the full history on top of that) and reads the raw events
+    // once. IssueCreated is always version 1 — issueCommands.create refuses to run if
+    // the issue already exists, so nothing can precede it — which gives existence and
+    // workspace checks for free from events[0] instead of a second query.
+    getComments: async(workspaceId: string, issueId: string): Promise<IssueCommentDto[]> => {
+        const events = await eventStore.getEvents(issueId)
+        if(events.length === 0) throw new NotFoundError('Issue not found')
+
+        const created = events[0].payload as unknown as IssueCreatedPayload
+        if(created.workspaceId !== workspaceId) throw new NotFoundError('Issue not found')
+
+        const commentEvents = events.filter((event) => event.type === 'Commented')
+        const actorsById = await userRepository.resolveActorsById(
+            commentEvents.map((event) => (event.payload as unknown as CommentedPayload).authorId)
+        )
+
+        return commentEvents.map((event) => {
+            const payload = event.payload as unknown as CommentedPayload
+            return {
+                id: payload.commentId,
+                issueId,
+                body: payload.body,
+                actor: actorsById.get(payload.authorId) ?? null,
+                createdAt: event.createdAt
+            }
+        })
     },
 
     search: async(workspaceId: string, query?: string): Promise<IssueSummaryDto[]> => {
