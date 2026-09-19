@@ -2,6 +2,7 @@ import { useEffect, useState, type FormEvent } from "react"
 import { Link2, Loader2 } from "lucide-react"
 import { useSearchIssues } from "../hooks/issueQueryHooks"
 import { useLinkIssue } from "../hooks/issueMutationHooks"
+import { LINK_TYPE_LABELS } from "../utils"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -26,13 +27,6 @@ import type { LinkIssueData } from "@/types/types"
 interface AddLinkSheetProps {
     workspaceId: string
     issueId: string
-}
-
-const linkTypeLabels: Record<LinkIssueData["linkType"], string> = {
-    blocks: "Blocks",
-    blocked_by: "Blocked by",
-    relates_to: "Relates to",
-    duplicates: "Duplicates",
 }
 
 const SEARCH_DEBOUNCE_MS = 300
@@ -139,7 +133,7 @@ export default function AddLinkSheet({ workspaceId, issueId }: AddLinkSheetProps
                                     <SelectValue />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    {Object.entries(linkTypeLabels).map(([value, label]) => (
+                                    {Object.entries(LINK_TYPE_LABELS).map(([value, label]) => (
                                         <SelectItem key={value} value={value}>
                                             {label}
                                         </SelectItem>

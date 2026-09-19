@@ -1,3 +1,16 @@
+import {
+    Activity as ActivityIcon,
+    CalendarClock,
+    CheckCircle2,
+    FilePlus2,
+    Link2,
+    RefreshCw,
+    RotateCcw,
+    Tag,
+    UserMinus,
+    UserPlus,
+    type LucideIcon,
+} from "lucide-react"
 import type { ActorSummary, IssueActivityProjection } from "@/types/types"
 
 export function actorLabel(actor: ActorSummary | null) {
@@ -16,6 +29,33 @@ export const ACTIVITY_TYPE_OPTIONS: { value: string; label: string }[] = [
     { value: "MovedToSprint", label: "Moved to sprint" },
 ]
 
+export function activitySummary(eventType: string): string {
+    return ACTIVITY_TYPE_OPTIONS.find((option) => option.value === eventType)?.label ?? eventType
+}
+
+const ACTIVITY_ICONS: Record<string, LucideIcon> = {
+    IssueCreated: FilePlus2,
+    StatusChanged: RefreshCw,
+    Assigned: UserPlus,
+    Unassigned: UserMinus,
+    LabelAdded: Tag,
+    Linked: Link2,
+    Closed: CheckCircle2,
+    Reopened: RotateCcw,
+    MovedToSprint: CalendarClock,
+}
+
+export function activityIcon(eventType: string): LucideIcon {
+    return ACTIVITY_ICONS[eventType] ?? ActivityIcon
+}
+
+export const LINK_TYPE_LABELS: Record<string, string> = {
+    blocks: "Blocks",
+    blocked_by: "Blocked by",
+    relates_to: "Relates to",
+    duplicates: "Duplicates",
+}
+
 export function describeActivity(entry: IssueActivityProjection): string {
     const p = entry.payload
     switch (entry.eventType) {
@@ -29,8 +69,10 @@ export function describeActivity(entry: IssueActivityProjection): string {
             return "unassigned a member"
         case "LabelAdded":
             return `added label "${p.label}"`
-        case "Linked":
-            return `linked this issue (${p.linkType})`
+        case "Linked": {
+            const linkType = LINK_TYPE_LABELS[p.linkType as string] ?? p.linkType
+            return `linked this issue (${linkType})`
+        }
         case "Closed":
             return p.reason ? `closed this issue: ${p.reason}` : "closed this issue"
         case "Reopened":

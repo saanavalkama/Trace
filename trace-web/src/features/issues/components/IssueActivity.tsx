@@ -1,9 +1,9 @@
 import { useMemo, useState } from "react"
-import { formatDistanceToNow } from "date-fns"
 import { ArrowUpDown, X } from "lucide-react"
 import { useGetActivity } from "../hooks/issueQueryHooks"
 import { useIssueActivityRealtimeUpdates } from "../hooks/useIssueActivityRealtimeUpdates"
-import { ACTIVITY_TYPE_OPTIONS, actorLabel, describeActivity } from "../utils"
+import { ACTIVITY_TYPE_OPTIONS } from "../utils"
+import ActivityCard from "./ActivityCard"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
@@ -108,15 +108,7 @@ export default function IssueActivity({ workspaceId, issueId }: IssueActivityPro
                     <p className="text-sm text-muted-foreground">No activity matches the selected filters</p>
                 )}
                 {visibleActivity?.map((entry) => (
-                    <div key={entry.id} className="flex flex-col gap-0.5 rounded-lg bg-card p-2 text-sm text-card-foreground">
-                        <p>
-                            <span className="font-medium">{actorLabel(entry.actor)}</span>{" "}
-                            {describeActivity(entry)}
-                        </p>
-                        <p className="text-xs text-muted-foreground">
-                            {formatDistanceToNow(new Date(entry.createdAt), { addSuffix: true })}
-                        </p>
-                    </div>
+                    <ActivityCard key={entry.id} entry={entry} />
                 ))}
             </div>
         </div>
