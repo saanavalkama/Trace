@@ -17,15 +17,15 @@ export const sprintService = {
         return dto
     },
 
-    getById: async(id:string) => {
+    getById: async(workspaceId:string, id:string) => {
         const sprint = await sprintRepository.getById(id)
-        if(!sprint) throw new NotFoundError('Sprint not found')
+        if(!sprint || sprint.workspaceId !== workspaceId) throw new NotFoundError('Sprint not found')
         return sprint
     },
 
-    update: async(id:string, data:UpdateSprintData) => {
+    update: async(workspaceId:string, id:string, data:UpdateSprintData) => {
         const current = await sprintRepository.getById(id)
-        if(!current) throw new NotFoundError('Sprint not found')
+        if(!current || current.workspaceId !== workspaceId) throw new NotFoundError('Sprint not found')
 
         const startDate = data.startDate ?? current.startDate
         const endDate = data.endDate ?? current.endDate
@@ -38,7 +38,10 @@ export const sprintService = {
         return sprint
     },
 
-    delete: async(id:string) => {
+    delete: async(workspaceId:string, id:string) => {
+        const current = await sprintRepository.getById(id)
+        if(!current || current.workspaceId !== workspaceId) throw new NotFoundError('Sprint not found')
+
         const sprint = await sprintRepository.delete(id)
         if(!sprint) throw new NotFoundError('Sprint not found')
     }

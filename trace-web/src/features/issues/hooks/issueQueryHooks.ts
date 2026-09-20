@@ -46,6 +46,15 @@ export const useGetLinks = (workspaceId:string, issueId:string) => {
     })
 }
 
+export const useGetStatusCounts = (workspaceId:string) => {
+    return useQuery({
+        queryKey:['issueStatusCounts', workspaceId],
+        queryFn:()=>issueService.getStatusCounts(workspaceId),
+        staleTime: 60 * 1000,
+        enabled: !!workspaceId
+    })
+}
+
 export const useSearchIssues = (workspaceId:string, query?:string) => {
     return useQuery({
         queryKey:['issues', workspaceId, query],

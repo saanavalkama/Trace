@@ -1,5 +1,5 @@
 import { apiClient } from "@/api/client"
-import type { Comment, IssueActivityProjection, IssueLink, IssueState, IssueSummary, Label } from "@/types/types"
+import type { Comment, IssueActivityProjection, IssueLink, IssueState, IssueStatusCounts, IssueSummary, Label } from "@/types/types"
 
 export const issueService = {
     getById: async(workspaceId:string, issueId:string):Promise<IssueState> => {
@@ -49,6 +49,11 @@ export const issueService = {
 
     link: async(workspaceId:string, issueId:string, linkedIIssueId:string, linkType:string):Promise<IssueState> => {
         const response = await apiClient.post<IssueState>(`/workspaces/${workspaceId}/issues/${issueId}/links`, { linkedIIssueId, linkType })
+        return response.data
+    },
+
+    getStatusCounts: async(workspaceId:string):Promise<IssueStatusCounts> => {
+        const response = await apiClient.get<IssueStatusCounts>(`/workspaces/${workspaceId}/issues/status-counts`)
         return response.data
     },
 

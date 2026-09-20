@@ -11,6 +11,7 @@ router.use(requireRole(WorkspaceRole.owner, WorkspaceRole.admin, WorkspaceRole.m
 
 router.post('/', issueController.create)
 router.get('/search', issueController.search)
+router.get('/status-counts', issueController.getStatusCounts)
 router.get('/:issueId', issueController.getById)
 router.patch('/:issueId/status', issueController.changeStatus)
 router.post('/:issueId/assignees', issueController.assign)

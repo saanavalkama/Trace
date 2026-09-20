@@ -218,6 +218,125 @@ describe('DELETE /:id/members/:userId', ()=>{
 
         const members = await prisma.workspaceMember.findMany({where:{workspaceId:createRes.body.id}})
         expect(members).toHaveLength(2)
-         
+
+    })
+})
+
+describe('PATCH /:id/members/:userId', ()=>{
+    it('owner role cannot be changed', async()=>{
+        const ownerEmail = 'owner@test.com'
+        const accessToken = await loginAndGetAccessToken(ownerEmail)
+
+        const createRes = await request(app)
+            .post('/workspaces')
+            .set('Authorization',`Bearer ${accessToken}`)
+            .send({name: 'test Inc'})
+
+        expect(createRes.status).toBe(201)
+
+        const owner = await prisma.user.findUnique({where:{email:ownerEmail}})
+
+        const updateRes = await request(app)
+            .patch(`/workspaces/${createRes.body.id}/members/${owner?.id}`)
+            .set('Authorization',`Bearer ${accessToken}`)
+            .send({role: WorkspaceRole.admin})
+
+        expect(updateRes.status).toBe(409)
+
+        const membership = await prisma.workspaceMember.findUnique({
+            where:{workspaceId_userId:{workspaceId:createRes.body.id, userId: owner!.id}}
+        })
+        expect(membership?.role).toBe(WorkspaceRole.owner)
+    })
+
+    it('admin can promote a member to admin and demote back', async()=>{
+        const ownerEmail = 'owner@test.com'
+        const ownerAT = await loginAndGetAccessToken(ownerEmail)
+
+        const createRes = await request(app)
+            .post('/workspaces')
+            .set('Authorization',`Bearer ${ownerAT}`)
+            .send({name:'test Inc'})
+
+        expect(createRes.status).toBe(201)
+
+        const adminUser = await prisma.user.create({data:{email:'admin@test.com'}})
+        await prisma.workspaceMember.create({data:{
+            workspaceId: createRes.body.id,
+            userId:adminUser.id,
+            role:WorkspaceRole.admin
+        }})
+
+        const memberUser = await prisma.user.create({data:{email:'member@test.com'}})
+        await prisma.workspaceMember.create({data:{
+            workspaceId: createRes.body.id,
+            userId:memberUser.id,
+            role: WorkspaceRole.member
+        }})
+
+        const adminAT = await loginAndGetAccessToken(adminUser.email)
+
+        const promoteRes = await request(app)
+            .patch(`/workspaces/${createRes.body.id}/members/${memberUser.id}`)
+            .set('Authorization', `Bearer ${adminAT}`)
+            .send({role: WorkspaceRole.admin})
+
+        expect(promoteRes.status).toBe(200)
+        expect(promoteRes.body.role).toBe(WorkspaceRole.admin)
+
+        const demoteRes = await request(app)
+            .patch(`/workspaces/${createRes.body.id}/members/${memberUser.id}`)
+            .set('Authorization', `Bearer ${adminAT}`)
+            .send({role: WorkspaceRole.member})
+
+        expect(demoteRes.status).toBe(200)
+        expect(demoteRes.body.role).toBe(WorkspaceRole.member)
+    })
+
+    it('rejects an invalid role value', async()=>{
+        const ownerEmail = 'owner@test.com'
+        const accessToken = await loginAndGetAccessToken(ownerEmail)
+
+        const createRes = await request(app)
+            .post('/workspaces')
+            .set('Authorization',`Bearer ${accessToken}`)
+            .send({name: 'test Inc'})
+
+        expect(createRes.status).toBe(201)
+
+        const memberUser = await prisma.user.create({data:{email:'member@test.com'}})
+        await prisma.workspaceMember.create({data:{
+            workspaceId: createRes.body.id,
+            userId:memberUser.id,
+            role: WorkspaceRole.member
+        }})
+
+        const updateRes = await request(app)
+            .patch(`/workspaces/${createRes.body.id}/members/${memberUser.id}`)
+            .set('Authorization',`Bearer ${accessToken}`)
+            .send({role: WorkspaceRole.owner})
+
+        expect(updateRes.status).toBe(400)
+    })
+
+    it('404s for a user who is not a member', async()=>{
+        const ownerEmail = 'owner@test.com'
+        const accessToken = await loginAndGetAccessToken(ownerEmail)
+
+        const createRes = await request(app)
+            .post('/workspaces')
+            .set('Authorization',`Bearer ${accessToken}`)
+            .send({name: 'test Inc'})
+
+        expect(createRes.status).toBe(201)
+
+        const strangerUser = await prisma.user.create({data:{email:'stranger@test.com'}})
+
+        const updateRes = await request(app)
+            .patch(`/workspaces/${createRes.body.id}/members/${strangerUser.id}`)
+            .set('Authorization',`Bearer ${accessToken}`)
+            .send({role: WorkspaceRole.admin})
+
+        expect(updateRes.status).toBe(404)
     })
 })

@@ -62,6 +62,15 @@ export const workspaceService = {
         await workspaceRepository.removeMember(workspaceId, userId)
     },
 
+    updateMemberRole:async(workspaceId:string, userId:string, role: WorkspaceRole) => {
+        const target = await workspaceRepository.getMembership(workspaceId, userId)
+
+        if(!target) throw new NotFoundError("User is not a member of this workspace")
+        if(target.role === WorkspaceRole.owner) throw new ConflictError("Cannot change the workspace owner's role")
+
+        return await workspaceRepository.updateMemberRole(workspaceId, userId, role)
+    },
+
     sendInvite: async(workspaceId:string, data:SendInviteServiceData )=>{
         //fixes: pass down workspace name so when send many emails it doesnt look up workspace name every time with members included
         

@@ -29,9 +29,9 @@ export const sprintController = {
     },
 
     getById: async(req:Request, res:Response) => {
-        const {sprintId} = req.params as {sprintId:string}
+        const {id: workspaceId, sprintId} = req.params as {id:string, sprintId:string}
         try{
-            const sprint = await sprintService.getById(sprintId)
+            const sprint = await sprintService.getById(workspaceId, sprintId)
             res.status(200).json(sprint)
         } catch(err){
             if(err instanceof NotFoundError){
@@ -46,9 +46,9 @@ export const sprintController = {
         if(!result.success){
             return res.status(400).json({errors: result.error.flatten().fieldErrors})
         }
-        const {sprintId} = req.params as {sprintId:string}
+        const {id: workspaceId, sprintId} = req.params as {id:string, sprintId:string}
         try{
-            const sprint = await sprintService.update(sprintId, result.data)
+            const sprint = await sprintService.update(workspaceId, sprintId, result.data)
             res.status(200).json(sprint)
         } catch(err){
             if(err instanceof NotFoundError){
@@ -62,9 +62,9 @@ export const sprintController = {
     },
 
     delete: async(req:Request, res:Response) => {
-        const {sprintId} = req.params as {sprintId:string}
+        const {id: workspaceId, sprintId} = req.params as {id:string, sprintId:string}
         try{
-            await sprintService.delete(sprintId)
+            await sprintService.delete(workspaceId, sprintId)
             res.status(204).send()
         } catch(err){
             if(err instanceof NotFoundError){
