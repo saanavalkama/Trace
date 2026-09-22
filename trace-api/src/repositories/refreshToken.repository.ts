@@ -28,6 +28,20 @@ export const refreshTokenRepository = {
         })
     },
 
+    // Atomically marks a token used, but only if nobody's already done so —
+    // the WHERE clause is the whole point: two concurrent calls for the same
+    // token can't both see revokedAt as null, because the database serializes
+    // concurrent UPDATEs to the same row. Exactly one of them affects a row.
+    claim: async(rawToken:string) => {
+        const tokenHash = hashToken(rawToken)
+        const { count } = await prisma.refreshToken.updateMany({
+            where: { tokenHash, revokedAt: null, expiresAt: { gt: new Date() } },
+            data: { revokedAt: new Date() }
+        })
+        if(count === 0) return null
+        return prisma.refreshToken.findUnique({ where: { tokenHash } })
+    },
+
     revoke: async(id:string) => {
         return prisma.refreshToken.update({
             where:{id},

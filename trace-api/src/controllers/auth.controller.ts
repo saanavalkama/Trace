@@ -6,6 +6,7 @@ import { env } from "../config/env"
 import { refreshTokenService } from "../services/token.service"
 import { userRepository } from "../repositories/user.repository"
 import { refreshTokenRepository } from "../repositories/refreshToken.repository"
+import { devOtpStore } from "../lib/devOtpStore"
 
 const SESSION_COOKIE_MAX_AGE_MS = 7 * 24 * 60 * 60 * 1000
 
@@ -86,6 +87,21 @@ export const authController = {
 
     me: (req:Request, res:Response) => {
         res.status(200).json({id: req.userId, email: req.email})
+    },
+
+    // Non-production only — see devOtpStore and where it's mounted in auth.routes.ts.
+    getDevLastCode: (req:Request, res:Response) => {
+        const email = String(req.query.email ?? '').toLowerCase().trim()
+        if(!email){
+            return res.status(400).json({message: 'email query param is required'})
+        }
+
+        const code = devOtpStore.get(email)
+        if(!code){
+            return res.status(404).json({message: 'No code found for this email'})
+        }
+
+        res.status(200).json({code})
     },
 
     logout: async(req:Request, res:Response) => {
