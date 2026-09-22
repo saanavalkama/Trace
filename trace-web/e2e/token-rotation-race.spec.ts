@@ -20,7 +20,11 @@ function extractRefreshToken(response: APIResponse): string | undefined {
     return setCookie?.match(/refreshToken=([^;]+)/)?.[1]
 }
 
-test('two tabs refreshing near-simultaneously: a stale replay revokes the whole family, logging out a tab that did nothing wrong', async ({ page, context, request }) => {
+function sleep(ms: number) {
+    return new Promise((resolve) => setTimeout(resolve, ms))
+}
+
+test('two tabs refreshing near-simultaneously both succeed and converge on the same token — only a genuinely stale replay later is treated as reuse', async ({ page, context, request }) => {
     // --- Log in for real, once, via the UI. This is "tab A". ---
     await page.goto('/login')
     await page.getByLabel('Email').fill(env.loginEmail)
@@ -47,40 +51,53 @@ test('two tabs refreshing near-simultaneously: a stale replay revokes the whole 
         context.request.post(`${env.apiUrl}/auth/refresh`),
     ])
 
-    // refreshTokenService.rotate() (trace-api/src/services/token.service.ts) reads
-    // the token, checks revokedAt, then revokes-and-creates — with no atomic claim
-    // on the row (contrast the outbox relay, which uses exactly that pattern). A
-    // genuinely simultaneous dispatch can let both requests see the token as still
-    // valid and both "win": this only asserts what's guaranteed to be true either
-    // way — the session survived the race in some form.
-    const statuses = [resA.status(), resB.status()]
-    expect(statuses).toContain(200)
+    // refreshTokenRepository.claim() atomically decides which request "wins"
+    // the database race — but the loser no longer gets rejected for losing.
+    // It checks refreshTokenStash (retrying briefly, since the winner still
+    // has to create its new token and write the stash entry) and is handed
+    // the exact same outcome instead of being treated as a stolen-token replay.
+    expect(resA.status()).toBe(200)
+    expect(resB.status()).toBe(200)
 
-    // --- Replaying the ORIGINAL pre-race token now — e.g. a retried request, a
-    // tab restored from sleep, or tab B simply trying again — is a definite reuse. ---
-    const replay = await context.request.post(`${env.apiUrl}/auth/refresh`, {
+    const tokenA = extractRefreshToken(resA)
+    const tokenB = extractRefreshToken(resB)
+    expect(tokenA).toBeTruthy()
+    expect(tokenB).toBe(tokenA) // the same winning token, not two divergent ones
+
+    // --- Even the ORIGINAL pre-race token, replayed again right after, still
+    // converges on the same result while inside the grace window (see
+    // refreshTokenStash.ts's TTL) — it's not just the two initial racers that
+    // get this treatment, anything landing within the window does. ---
+    const quickReplay = await context.request.post(`${env.apiUrl}/auth/refresh`, {
         headers: { Cookie: `refreshToken=${originalRefreshToken}` },
     })
-    expect(replay.status()).toBe(401)
+    expect(quickReplay.status()).toBe(200)
+    expect(extractRefreshToken(quickReplay)).toBe(tokenA)
 
-    // --- The blast radius: reuse detection revokes every currently-active token
-    // in the family (refreshTokenRepository.revokeFamily) — including whichever
-    // fresh token(s) the race above just legitimately issued. Pull out whichever
-    // response actually won and prove ITS brand-new, never-replayed token is now
-    // also dead — collateral damage to a tab that did nothing wrong. ---
-    const winner = resA.status() === 200 ? resA : resB
-    const winnerToken = extractRefreshToken(winner)
-    expect(winnerToken).toBeTruthy()
+    // --- The user-visible proof: tab A, which never replayed anything itself
+    // and has had a valid session this whole time, is completely unaffected —
+    // reloading still restores it onto /workspaces, no logout. ---
+    await page.reload()
+    await expect(page).toHaveURL(/\/workspaces$/)
+    await expect(page.getByRole('heading', { name: 'Your workspaces' })).toBeVisible()
 
-    const winnerRetry = await context.request.post(`${env.apiUrl}/auth/refresh`, {
-        headers: { Cookie: `refreshToken=${winnerToken}` },
+    // --- Once the grace window has genuinely elapsed, the same replay is no
+    // longer assumed to be a race — this is what actually distinguishes a
+    // benign double-refresh from a real stolen-token replay. ---
+    await sleep(3_500)
+
+    const staleReplay = await context.request.post(`${env.apiUrl}/auth/refresh`, {
+        headers: { Cookie: `refreshToken=${originalRefreshToken}` },
     })
-    expect(winnerRetry.status()).toBe(401)
+    expect(staleReplay.status()).toBe(401)
 
-    // --- The user-visible consequence: tab A, which never replayed anything and
-    // has had a perfectly valid in-memory access token this whole time, next
-    // tries to restore its session (AuthBootstrap runs refreshAccessToken() on
-    // every load) and finds the entire family dead. It gets logged out. ---
+    // The blast radius still applies to genuine reuse — the whole family,
+    // including the earlier legitimate winner, is now dead too.
+    const winnerAfterRevoke = await context.request.post(`${env.apiUrl}/auth/refresh`, {
+        headers: { Cookie: `refreshToken=${tokenA}` },
+    })
+    expect(winnerAfterRevoke.status()).toBe(401)
+
     await page.reload()
     await expect(page).toHaveURL(/\/login$/)
 })

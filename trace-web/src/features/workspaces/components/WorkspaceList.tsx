@@ -11,12 +11,10 @@ export default function WorkspaceList(){
 
     return(
         <TooltipProvider>
-            {/* Unlike routes nested under WorkspaceLayout (which gets bg-background for
-                free from SidebarInset), this is a standalone route with nothing above it
-                applying a background — without this it sits on the raw page background,
-                which (unlike the shadcn tokens) does react to OS dark-mode preference,
-                making text-foreground unreadable against it. */}
-            <div className="min-h-svh w-full bg-background">
+            {/* ProtectedRoute's shell already applies bg-background and constrains
+                this to the space under the navbar — just need to scroll internally
+                if the list grows past that. */}
+            <div className="h-full w-full overflow-y-auto">
                 <div className="mx-auto flex w-full max-w-2xl flex-col gap-4 p-6">
                     <div className="flex items-center justify-between gap-2">
                         <h2 className="text-xl font-semibold text-foreground">Your workspaces</h2>

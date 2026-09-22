@@ -88,6 +88,45 @@ test('reload while logged out redirects to /login, not stuck on a blank/loading 
     await expect(page.getByRole('heading', { name: 'Log in' })).toBeVisible()
 })
 
+test('logout clears the session and blocks back-navigation into protected pages', async ({ page, request }) => {
+    await page.goto('/login')
+    await page.getByLabel('Email').fill(env.loginEmail)
+    await page.getByRole('button', { name: 'Request Code' }).click()
+    await expect(page).toHaveURL(/\/verifyCode$/)
+
+    const code = await fetchLatestCode(request, env.loginEmail)
+    await page.getByLabel('Code').fill(code)
+    await page.getByRole('button', { name: 'Verify Code' }).click()
+    await expect(page).toHaveURL(/\/workspaces$/)
+    await expect(page.getByRole('heading', { name: 'Your workspaces' })).toBeVisible()
+
+    await page.getByRole('button', { name: 'Logout' }).click()
+    await expect(page).toHaveURL(/\/login$/)
+
+    // The logout redirect uses `replace`, not `push` (see ProtectedRoute.tsx),
+    // so /workspaces is excised from history rather than just sitting one
+    // step behind /login — the back button can't land on it at all. But the
+    // real guarantee doesn't depend on that history detail: ProtectedRoute
+    // re-checks auth state on every render, not just on first mount, so even
+    // landing on a stale route by some other path still redirects. Assert
+    // the actual security property (no protected content, ever) rather than
+    // the incidental URL history ends up producing.
+    await page.goBack()
+    await expect(page).not.toHaveURL(/\/workspaces$/)
+    await expect(page.getByRole('heading', { name: 'Your workspaces' })).not.toBeVisible()
+
+    await page.goBack()
+    await expect(page).not.toHaveURL(/\/workspaces$/)
+    await expect(page.getByRole('heading', { name: 'Your workspaces' })).not.toBeVisible()
+
+    // And it's not just the in-app back button — directly navigating (typing
+    // the URL, a bookmark, a stale tab) to a protected route after logout is
+    // blocked the same way.
+    await page.goto('/workspaces')
+    await expect(page).toHaveURL(/\/login$/)
+    await expect(page.getByRole('heading', { name: 'Your workspaces' })).not.toBeVisible()
+})
+
 test('access token expiry mid-session triggers a transparent refresh, not a bounce to login', async ({ page, request }) => {
     await page.goto('/login')
 
