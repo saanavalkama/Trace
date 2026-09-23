@@ -20,7 +20,11 @@ export default function SprintSidebar(){
     const { data: sprints, isPending, isError } = useGetSprints(workspaceId!)
 
     return (
-        <Sidebar>
+        // The sidebar's fixed positioning defaults to spanning the whole
+        // viewport (top-0 to bottom-0), which ignores DOM nesting entirely —
+        // without this override it renders behind/over the navbar in
+        // ProtectedRoute rather than below it.
+        <Sidebar className="top-14 bottom-0">
             <SidebarContent>
                 <SidebarGroup>
                     <SidebarGroupLabel>Sprints</SidebarGroupLabel>

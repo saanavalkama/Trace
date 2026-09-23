@@ -162,6 +162,12 @@ export interface AddLabelData{
     label:string
 }
 
+export interface UpdateMemberRoleData{
+    workspaceId:string
+    userId:string
+    role:'admin' | 'member'
+}
+
 export interface WorkspaceMember{
     id:string
     workspaceId:string
@@ -203,6 +209,13 @@ export interface IssueSummary{
     title:string
     status: 'open' | 'in_progress' | 'in_review' | 'closed'
     sprintId: string | null
+}
+
+export interface IssueStatusCounts{
+    open:number
+    in_progress:number
+    in_review:number
+    closed:number
 }
 
 export interface MoveToSprintData{

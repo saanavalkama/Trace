@@ -1,3 +1,6 @@
+## KNOWN LIMITATIONS
+- Cross-tab refresh token race. The single-flight pattern in the response interceptor prevents multiple concurrent requests within one tab from triggering redundant refreshes — but that coordination lives in JS memory, which is isolated per tab. If two tabs (same browser, same login) reload at nearly the same moment, both can independently attempt to use the same refresh token before either has rotated it. Since refresh tokens are single-use with reuse detection, whichever request loses the race presents an already-rotated token, which can trigger the whole token family being revoked and logging both tabs out. Not fixed — narrow edge case (requires near-simultaneous reloads across multiple tabs of the same session), not something the current architecture protects against. Would require coordination that's actually shared across tabs (e.g. BroadcastChannel, or a localStorage-based lock) rather than in-memory state, which is a real design addition, not a small patch.
+
 ## WHAT REDIS BENCHMARK TESTING SHOWS (SINGLE GROUP, SINGLE CONSUMER)
 - the latency starts around at 9,000 events/s (from pushing to stream to calling onMessage). If the workload ever got that high adding more consumers for that group would be reasonable. Adding more groups would not affect that issue, since they would independently process all entries. 
 

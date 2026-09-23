@@ -22,7 +22,7 @@ export default function VerifyCodePage(){
         verifyCode({email, code},{
             onSuccess:(data)=>{
                 setAuth(data.accessToken, data.user)
-                navigate('/')
+                navigate('/workspaces')
             }
         })
     }

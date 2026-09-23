@@ -22,7 +22,7 @@ interface RetriableRequestConfig extends InternalAxiosRequestConfig {
 
 let refreshPromise: Promise<string> | null = null
 
-function refreshAccessToken(): Promise<string> {
+export function refreshAccessToken(): Promise<string> {
     if (!refreshPromise) {
         refreshPromise = axios
             .post<{ accessToken: string }>(`${env.apiUrl}/auth/refresh`, {}, { withCredentials: true })

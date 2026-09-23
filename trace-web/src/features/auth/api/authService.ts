@@ -16,6 +16,10 @@ export const authService = {
     getMe:async():Promise<AuthUser> => {
         const response = await apiClient.get<AuthUser>('/auth/me')
         return response.data
+    },
+
+    logout:async():Promise<void> => {
+        await apiClient.post('/auth/logout')
     }
 
 }

@@ -17,6 +17,10 @@ export const updateWorkspaceSchema = z.object({
         .max(50, 'Name must be at most 50 characthers')
 })
 
+export const updateMemberRoleSchema = z.object({
+    role: z.enum([WorkspaceRole.admin, WorkspaceRole.member])
+})
+
 export const sendInviteSchema = z.object({
     email: z.string().email(),
     role: z.enum([WorkspaceRole.admin, WorkspaceRole.member, WorkspaceRole.owner])
@@ -35,4 +39,5 @@ export const sendManyInvitesSchema = z.object({
 
 export type CreateWorkspaceInput = z.infer<typeof createWorkspaceSchema>
 export type UpdateWorkspaceInput = z.infer<typeof updateWorkspaceSchema>
+export type UpdateMemberRoleInput = z.infer<typeof updateMemberRoleSchema>
 export type SendInviteInput = z.infer<typeof sendInviteSchema>

@@ -39,6 +39,12 @@ router.delete(
     workspaceController.removeMember
 )
 
+router.patch(
+    '/:id/members/:userId',
+    requireRole(WorkspaceRole.admin, WorkspaceRole.owner),
+    workspaceController.updateMemberRole
+)
+
 router.post(
     '/:id/invites',
     requireRole(WorkspaceRole.admin, WorkspaceRole.owner),

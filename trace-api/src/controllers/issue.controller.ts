@@ -59,6 +59,17 @@ export const issueController = {
         }
     },
 
+    getStatusCounts: async(req:Request, res:Response) => {
+        const {id: workspaceId} = req.params as {id:string}
+        try{
+            const counts = await issueService.getStatusCounts(workspaceId)
+            res.status(200).json(counts)
+        } catch(err){
+            if(handleIssueError(err, res)) return
+            throw err
+        }
+    },
+
     search: async(req:Request, res:Response) => {
         const {id: workspaceId} = req.params as {id:string}
         const query = typeof req.query.query === 'string' ? req.query.query : undefined

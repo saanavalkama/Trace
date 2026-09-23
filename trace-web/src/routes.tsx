@@ -1,10 +1,14 @@
 import { createBrowserRouter } from "react-router-dom";
 import LoginPage from "./features/auth/components/LoginPage";
 import VerifyCodePage from "./features/auth/components/VerifyCodePage";
+import ProtectedRoute from "./features/auth/components/ProtectedRoute";
 import HomePage from "./pages/HomePage";
 import Workspaces from "./features/workspaces/pages/Workspaces";
 import CreateWorkspaceForm from "./features/workspaces/components/CreateWorkspaceForm";
 import WorkspaceLayout from "./features/workspaces/pages/WorkspaceLayout";
+import WorkspaceOverview from "./features/workspaces/pages/WorkspaceOverview";
+import WorkspaceInfo from "./features/workspaces/pages/WorkspaceInfo";
+import WorkspaceSettings from "./features/workspaces/pages/WorkspaceSettings";
 import CreateSprintForm from "./features/sprints/components/CreateSprintForm";
 import BoardView from "./features/board/components/BoardView";
 import CreateIssueForm from "./features/board/components/CreateIssueForm";
@@ -14,23 +18,29 @@ export const router = createBrowserRouter([
     {path: '/', element:<HomePage />},
     {path: '/login', element:<LoginPage />},
     {path: '/verifyCode', element:<VerifyCodePage />},
-    {path: '/workspaces', element: <Workspaces />},
-    {path: '/workspaces/create', element: <CreateWorkspaceForm />},
     {
-        path: '/workspaces/:workspaceId',
-        element:<WorkspaceLayout />,
-        children:[
-            {index:true, element:<p>coming</p>},
-            {path:'sprints/create', element:<CreateSprintForm />},
+        element: <ProtectedRoute />,
+        children: [
+            {path: '/workspaces', element: <Workspaces />},
+            {path: '/workspaces/create', element: <CreateWorkspaceForm />},
             {
-                path:'sprints/:sprintId',
-                element:<BoardView />,
+                path: '/workspaces/:workspaceId',
+                element:<WorkspaceLayout />,
                 children:[
-                    {path:'issues/create', element:<CreateIssueForm />}
+                    {index:true, element:<WorkspaceOverview />},
+                    {path:'info', element:<WorkspaceInfo />},
+                    {path:'sprints/create', element:<CreateSprintForm />},
+                    {
+                        path:'sprints/:sprintId',
+                        element:<BoardView />,
+                        children:[
+                            {path:'issues/create', element:<CreateIssueForm />}
+                        ]
+                    },
+                    {path:'issues/:issueId', element:<IssueDetail />},
+                    {path:'settings', element:<WorkspaceSettings />}
                 ]
-            },
-            {path:'issues/:issueId', element:<IssueDetail />},
-            {path:'settings', element:<p>coming</p>}
+            }
         ]
     }
 ])

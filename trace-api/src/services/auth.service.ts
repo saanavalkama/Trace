@@ -9,6 +9,7 @@ import { env } from '../config/env'
 import { inviteRepository } from '../repositories/invite.repository'
 import { inviteService } from './invite.service'
 import { refreshTokenService } from './token.service'
+import { devOtpStore } from '../lib/devOtpStore'
 
 const CODE_TTL_MS = 5 * 60 * 1000
 const RESEND_COOLDOWN_MS = 60 * 1000
@@ -49,6 +50,11 @@ export const authService = {
         const expiresAt = new Date(Date.now() + CODE_TTL_MS)
 
         await loginCodeRepository.upsertForEmail(email, {codeHash, expiresAt, attemps:0, inviteToken:effectiveInviteToken})
+
+        if(env.nodeEnv !== 'production'){
+            devOtpStore.set(email, code)
+        }
+
         await emailSender.sendOtpEmail(email,code)
     },
 

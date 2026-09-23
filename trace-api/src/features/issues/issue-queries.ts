@@ -37,6 +37,14 @@ export const issueQueries = {
         })
     },
 
+    countByStatusForWorkspace: async(workspaceId:string) => {
+        return prisma.issueBoardProjection.groupBy({
+            by: ['status'],
+            where: { workspaceId },
+            _count: { _all: true }
+        })
+    },
+
     getLinks: async(issueId:string) => {
         return prisma.issueActivityProjection.findMany({
             where:{issueId, eventType:'Linked'},

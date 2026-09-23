@@ -89,6 +89,13 @@ export interface IssueSummaryDto {
     sprintId: string | null
 }
 
+export interface IssueStatusCountsDto {
+    open: number
+    in_progress: number
+    in_review: number
+    closed: number
+}
+
 export interface ActorDto {
     id: string
     email: string

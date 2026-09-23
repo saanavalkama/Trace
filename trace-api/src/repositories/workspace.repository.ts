@@ -92,6 +92,23 @@ export const workspaceRepository = {
         })
     },
 
+    updateMemberRole: async(workspaceId:string, userId:string, role: WorkspaceRole) =>{
+        try{
+            return await prisma.workspaceMember.update({
+                where:{workspaceId_userId:{
+                    workspaceId, userId
+                }},
+                data:{role},
+                include:{user:{select:{id:true, email:true}}}
+            })
+        }catch(err){
+            if(err instanceof Prisma.PrismaClientKnownRequestError && err.code === 'P2025'){
+                return null
+            }
+            throw err
+        }
+    },
+
     addMember: async(workspaceId:string, userId:string, role: WorkspaceRole)=>{
         return await prisma.workspaceMember.create({
             data:{

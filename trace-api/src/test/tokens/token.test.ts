@@ -3,6 +3,7 @@ import { prisma } from "../../db/prisma";
 import { refreshTokenService } from "../../services/token.service";
 import { refreshTokenRepository } from "../../repositories/refreshToken.repository";
 import { ReusedTokenError } from "../../errors/errors";
+import { refreshTokenStash } from "../../lib/refreshTokenStash";
 import crypto from 'crypto'
 import request from 'supertest'
 import app from '../../app'
@@ -34,12 +35,40 @@ describe('refreshTokenService.rotate', ()=>{
         expect(familyTokens).toHaveLength(2)
     })
 
-    it('detects token reuse and revokes the whole family', async()=>{
+    it('reuse within the grace window returns the winning result instead of rejecting (benign race)', async()=>{
+        const user = await prisma.user.create({data:{email:'test@test.com'}})
+
+        const {rawToken:firstRawToken, familyId} = await refreshTokenService.issueNewFamily(user.id)
+
+        const winner = await refreshTokenService.rotate(firstRawToken)
+
+        // Replaying the same already-used token right away simulates a second
+        // request that raced against the first (e.g. a sibling tab refreshing
+        // at nearly the same instant) — within the grace window this should
+        // quietly hand back the same winning result, not be treated as reuse.
+        const loser = await refreshTokenService.rotate(firstRawToken)
+
+        expect(loser).toEqual(winner)
+
+        const familyTokens = await prisma.refreshToken.findMany({where:{familyId}})
+        expect(familyTokens).toHaveLength(2)
+
+        const activeTokens = familyTokens.filter((t) => t.revokedAt === null)
+        expect(activeTokens).toHaveLength(1)
+        expect(activeTokens[0].tokenHash).toBe(refreshTokenRepository.hashToken(winner.rawToken))
+    })
+
+    it('reuse after the grace window has elapsed is treated as a genuine replay and revokes the family', async()=>{
         const user = await prisma.user.create({data:{email:'test@test.com'}})
 
         const {rawToken:firstRawToken, familyId} = await refreshTokenService.issueNewFamily(user.id)
 
         const {rawToken:secondRawToken, userId} = await refreshTokenService.rotate(firstRawToken)
+
+        // Simulate the grace window having elapsed by clearing the stash
+        // directly, rather than a real multi-second sleep in the test — the
+        // stash's TTL *is* the grace window (see refreshTokenStash.ts).
+        await refreshTokenStash.delete(refreshTokenRepository.hashToken(firstRawToken))
 
         await expect(refreshTokenService.rotate(firstRawToken)).rejects.toThrow(ReusedTokenError)
 
@@ -51,6 +80,7 @@ describe('refreshTokenService.rotate', ()=>{
         const allFamilyTokens = await prisma.refreshToken.findMany({where:{familyId}})
 
         expect(allFamilyTokens.every((t)=>t.revokedAt !== null)).toBe(true)
+        expect(userId).toBe(user.id)
     })
 
     it('expired token throws and revokes the token', async()=>{

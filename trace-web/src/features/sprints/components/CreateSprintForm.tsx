@@ -70,7 +70,7 @@ export default function CreateSprintForm(){
     }
 
     return (
-        <div className="flex min-h-svh items-center justify-center px-4 py-12">
+        <div className="flex h-full items-center justify-center overflow-y-auto px-4 py-12">
             <Card className="w-full max-w-lg">
                 <CardHeader>
                     <CardTitle className="text-xl">Create a sprint</CardTitle>

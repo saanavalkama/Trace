@@ -1,5 +1,5 @@
 import { Request, Response } from "express"
-import { createWorkspaceSchema, sendInviteSchema, sendManyInvitesSchema, updateWorkspaceSchema } from "../validationSchemas/workpace.schema"
+import { createWorkspaceSchema, sendInviteSchema, sendManyInvitesSchema, updateMemberRoleSchema, updateWorkspaceSchema } from "../validationSchemas/workpace.schema"
 import { workspaceService } from "../services/workspace.service"
 import { ConflictError, NotFoundError } from "../errors/errors"
 
@@ -72,6 +72,26 @@ export const workspaceController = {
         try{
             await workspaceService.removeMember(id, userId)
             res.status(204).send()
+        } catch(err){
+            if(err instanceof NotFoundError){
+                return res.status(404).json({message: err.message})
+            }
+            if(err instanceof ConflictError){
+                return res.status(409).json({message: err.message})
+            }
+            throw err
+        }
+    },
+
+    updateMemberRole: async(req:Request, res:Response) => {
+        const {id, userId} = req.params as {id:string, userId:string}
+        const result = updateMemberRoleSchema.safeParse(req.body)
+        if(!result.success){
+            return res.status(400).json({errors: result.error.flatten().fieldErrors})
+        }
+        try{
+            const member = await workspaceService.updateMemberRole(id, userId, result.data.role)
+            res.status(200).json(member)
         } catch(err){
             if(err instanceof NotFoundError){
                 return res.status(404).json({message: err.message})

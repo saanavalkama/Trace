@@ -1,5 +1,5 @@
 import { apiClient } from "../../../api/client"
-import type { CreateWorkspaceData, CreateWorkspaceResponseData, MyWorkspace, SendInvitesData, SendManyInvitesResult, WorkspaceMember } from "../../../types/types"
+import type { CreateWorkspaceData, CreateWorkspaceResponseData, MyWorkspace, SendInvitesData, SendManyInvitesResult, UpdateMemberRoleData, WorkspaceMember } from "../../../types/types"
 
 export const workspaceService = {
     getWorkspaces: async():Promise<MyWorkspace[]> => {
@@ -19,5 +19,13 @@ export const workspaceService = {
         const response = await apiClient.get<WorkspaceMember[]>(`/workspaces/${workspaceId}/members`)
         return response.data
 
+    },
+
+    updateMemberRole: async(data:UpdateMemberRoleData):Promise<WorkspaceMember>=>{
+        const response = await apiClient.patch<WorkspaceMember>(
+            `/workspaces/${data.workspaceId}/members/${data.userId}`,
+            { role: data.role }
+        )
+        return response.data
     }
 }

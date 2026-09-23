@@ -14,7 +14,7 @@ import { sprintRepository } from '../repositories/sprint.repository'
 import { userRepository } from '../repositories/user.repository'
 import { ConflictError, NotFoundError } from '../errors/errors'
 import { issueQueries } from '../features/issues/issue-queries'
-import { IssueCommentDto, IssueLabelDto, IssueSummaryDto } from '../types/types'
+import { IssueCommentDto, IssueLabelDto, IssueStatusCountsDto, IssueSummaryDto } from '../types/types'
 import {prisma} from '../db/prisma'
 import app from '../app'
 
@@ -112,6 +112,20 @@ export const issueService = {
                 createdAt: event.createdAt
             }
         })
+    },
+
+    getStatusCounts: async(workspaceId: string): Promise<IssueStatusCountsDto> => {
+        const grouped = await issueQueries.countByStatusForWorkspace(workspaceId)
+        const counts: IssueStatusCountsDto = { open: 0, in_progress: 0, in_review: 0, closed: 0 }
+
+        for (const row of grouped) {
+            const status = row.status as keyof IssueStatusCountsDto
+            if (status in counts) {
+                counts[status] = row._count._all
+            }
+        }
+
+        return counts
     },
 
     search: async(workspaceId: string, query?: string): Promise<IssueSummaryDto[]> => {
