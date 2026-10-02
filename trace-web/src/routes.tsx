@@ -3,16 +3,11 @@ import LoginPage from "./features/auth/components/LoginPage";
 import VerifyCodePage from "./features/auth/components/VerifyCodePage";
 import ProtectedRoute from "./features/auth/components/ProtectedRoute";
 import HomePage from "./pages/HomePage";
-import Workspaces from "./features/workspaces/pages/Workspaces";
-import CreateWorkspaceForm from "./features/workspaces/components/CreateWorkspaceForm";
 import WorkspaceLayout from "./features/workspaces/pages/WorkspaceLayout";
-import WorkspaceOverview from "./features/workspaces/pages/WorkspaceOverview";
-import WorkspaceInfo from "./features/workspaces/pages/WorkspaceInfo";
-import WorkspaceSettings from "./features/workspaces/pages/WorkspaceSettings";
-import CreateSprintForm from "./features/sprints/components/CreateSprintForm";
-import BoardView from "./features/board/components/BoardView";
-import CreateIssueForm from "./features/board/components/CreateIssueForm";
-import IssueDetail from "./features/issues/components/IssueDetail";
+
+// Route-level code splitting: each page below is its own chunk, fetched on navigation.
+const lazyPage = (load: () => Promise<{ default: React.ComponentType }>) =>
+    async () => ({ Component: (await load()).default });
 
 export const router = createBrowserRouter([
     {path: '/', element:<HomePage />},
@@ -21,24 +16,24 @@ export const router = createBrowserRouter([
     {
         element: <ProtectedRoute />,
         children: [
-            {path: '/workspaces', element: <Workspaces />},
-            {path: '/workspaces/create', element: <CreateWorkspaceForm />},
+            {path: '/workspaces', lazy: lazyPage(() => import("./features/workspaces/pages/Workspaces"))},
+            {path: '/workspaces/create', lazy: lazyPage(() => import("./features/workspaces/components/CreateWorkspaceForm"))},
             {
                 path: '/workspaces/:workspaceId',
                 element:<WorkspaceLayout />,
                 children:[
-                    {index:true, element:<WorkspaceOverview />},
-                    {path:'info', element:<WorkspaceInfo />},
-                    {path:'sprints/create', element:<CreateSprintForm />},
+                    {index:true, lazy: lazyPage(() => import("./features/workspaces/pages/WorkspaceOverview"))},
+                    {path:'info', lazy: lazyPage(() => import("./features/workspaces/pages/WorkspaceInfo"))},
+                    {path:'sprints/create', lazy: lazyPage(() => import("./features/sprints/components/CreateSprintForm"))},
                     {
                         path:'sprints/:sprintId',
-                        element:<BoardView />,
+                        lazy: lazyPage(() => import("./features/board/components/BoardView")),
                         children:[
-                            {path:'issues/create', element:<CreateIssueForm />}
+                            {path:'issues/create', lazy: lazyPage(() => import("./features/board/components/CreateIssueForm"))}
                         ]
                     },
-                    {path:'issues/:issueId', element:<IssueDetail />},
-                    {path:'settings', element:<WorkspaceSettings />}
+                    {path:'issues/:issueId', lazy: lazyPage(() => import("./features/issues/components/IssueDetail"))},
+                    {path:'settings', lazy: lazyPage(() => import("./features/workspaces/pages/WorkspaceSettings"))}
                 ]
             }
         ]

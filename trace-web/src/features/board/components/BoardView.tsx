@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react"
-import { Link, Outlet, useParams } from "react-router-dom"
+import { Link, Outlet, useParams, useSearchParams } from "react-router-dom"
 import { Plus } from "lucide-react"
 import {
     DndContext,
@@ -14,11 +14,13 @@ import {
 import { useBoard } from "../hooks/boardQueryHooks"
 import { useMoveIssue } from "../hooks/boardMutationHooks"
 import { useBoardRealtimeUpdates } from "../hooks/useBoardRealtimeUpdates"
+import { useMe } from "@/features/auth/hooks/queries/authQueryHooks"
 import BoardColumn from "./BoardColumn"
 import BoardCard from "./BoardCard"
 import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
 import { TooltipProvider } from "@/components/ui/tooltip"
+import { cn } from "@/lib/utils"
 import type { BoardIssueResponse } from "@/types/types"
 
 const COLUMNS: { status: BoardIssueResponse['status']; title: string }[] = [
@@ -28,22 +30,50 @@ const COLUMNS: { status: BoardIssueResponse['status']; title: string }[] = [
     { status: 'closed', title: 'Closed' },
 ]
 
+type BoardTab = 'team' | 'mine'
+
+const TABS: { value: BoardTab; label: string }[] = [
+    { value: 'team', label: 'Team' },
+    { value: 'mine', label: 'My issues' },
+]
+
 export default function BoardView() {
     const { workspaceId, sprintId } = useParams<{ workspaceId: string; sprintId: string }>()
     const { data: issues, isPending, isError } = useBoard(workspaceId!, sprintId!)
     const moveIssue = useMoveIssue(workspaceId!, sprintId!)
     useBoardRealtimeUpdates(workspaceId!, sprintId!)
+    const { data: me } = useMe()
     const [activeIssue, setActiveIssue] = useState<BoardIssueResponse | null>(null)
 
+    // Tab lives in the URL so refreshes and shared links keep the same view
+    const [searchParams, setSearchParams] = useSearchParams()
+    const tab: BoardTab = searchParams.get('view') === 'mine' ? 'mine' : 'team'
+
+    function selectTab(next: BoardTab) {
+        setSearchParams((params) => {
+            if (next === 'team') params.delete('view')
+            else params.set('view', next)
+            return params
+        }, { replace: true })
+    }
+
     const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 4 } }))
+
+    const myIssues = useMemo(
+        () => issues?.filter((issue) => !!me && issue.assignees.some((assignee) => assignee.id === me.id)) ?? [],
+        [issues, me]
+    )
+    const visibleIssues = tab === 'mine' ? myIssues : issues
 
     const issuesByStatus = useMemo(() => {
         const grouped = new Map<BoardIssueResponse['status'], BoardIssueResponse[]>(
             COLUMNS.map((column) => [column.status, []])
         )
-        issues?.forEach((issue) => grouped.get(issue.status)?.push(issue))
+        visibleIssues?.forEach((issue) => grouped.get(issue.status)?.push(issue))
         return grouped
-    }, [issues])
+    }, [visibleIssues])
+
+    const tabCounts: Record<BoardTab, number> = { team: issues?.length ?? 0, mine: myIssues.length }
 
     function handleDragStart(event: DragStartEvent) {
         setActiveIssue(issues?.find((issue) => issue.issueId === event.active.id) ?? null)
@@ -63,7 +93,27 @@ export default function BoardView() {
 
     return (
         <div className="flex h-full min-h-0 flex-col gap-3">
-            <div className="flex items-center gap-2">
+            <div className="flex items-center justify-between gap-2">
+                <div role="tablist" aria-label="Board view" className="inline-flex rounded-md bg-muted p-1">
+                    {TABS.map(({ value, label }) => (
+                        <button
+                            key={value}
+                            type="button"
+                            role="tab"
+                            aria-selected={tab === value}
+                            onClick={() => selectTab(value)}
+                            className={cn(
+                                "inline-flex items-center gap-1.5 rounded-sm px-3 py-1 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground",
+                                tab === value && "bg-background text-foreground shadow-sm"
+                            )}
+                        >
+                            {label}
+                            {!isPending && (
+                                <span className="text-xs tabular-nums text-muted-foreground">{tabCounts[value]}</span>
+                            )}
+                        </button>
+                    ))}
+                </div>
                 <Button asChild size="sm">
                     <Link to={`/workspaces/${workspaceId}/sprints/${sprintId}/issues/create`}>
                         <Plus />
@@ -95,6 +145,9 @@ export default function BoardView() {
                         onDragEnd={handleDragEnd}
                     >
                         <div className="flex min-h-0 flex-1 flex-col gap-2">
+                            {tab === 'mine' && myIssues.length === 0 && (
+                                <p className="text-sm text-muted-foreground">No issues assigned to you in this sprint.</p>
+                            )}
                             <div className="flex min-h-0 flex-1 gap-3 overflow-x-auto pb-2">
                                 {COLUMNS.map((column) => (
                                     <BoardColumn
