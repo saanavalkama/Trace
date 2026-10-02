@@ -1,5 +1,6 @@
 import { useState } from "react"
 import { useNavigate } from "react-router-dom"
+import axios from "axios"
 import { Loader2, X } from "lucide-react"
 import { useCreateWorkspace, useSendManyInvites } from "../hooks/workspaceMutationHook"
 import { Button } from "@/components/ui/button"
@@ -22,6 +23,19 @@ import {
     SelectValue,
 } from "@/components/ui/select"
 
+const DEFAULT_ERROR_MESSAGE = "Something went wrong creating your workspace. Please try again."
+
+// The backend validates the name with zod and returns 400 with
+// { errors: { name: ["Name must be at least 2 characters long"] } } — show
+// that specific message when present instead of the generic fallback.
+function getCreateWorkspaceErrorMessage(error: unknown): string {
+    if (axios.isAxiosError(error) && error.response?.status === 400) {
+        const nameError = error.response.data?.errors?.name?.[0]
+        if (typeof nameError === "string") return nameError
+    }
+    return DEFAULT_ERROR_MESSAGE
+}
+
 export default function CreateWorkspaceForm(){
 
     interface PendingInvite{
@@ -35,7 +49,7 @@ export default function CreateWorkspaceForm(){
     const [role,setRole] = useState<"admin" | "member">('member')
 
     const navigate = useNavigate()
-    const {mutate, isPending, isError} = useCreateWorkspace()
+    const {mutate, isPending, isError, error} = useCreateWorkspace()
     const {mutateAsync: sendInvitesAsync} = useSendManyInvites()
 
     function handleSubmit(e:React.FormEvent){
@@ -151,7 +165,7 @@ export default function CreateWorkspaceForm(){
 
                         {isError && (
                             <p className="text-sm text-destructive">
-                                Something went wrong creating your workspace. Please try again.
+                                {getCreateWorkspaceErrorMessage(error)}
                             </p>
                         )}
                     </CardContent>
